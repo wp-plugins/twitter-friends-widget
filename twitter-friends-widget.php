@@ -57,14 +57,16 @@ function widget_pmcFriends_init() {
 		//we'll use Troy Wolf's http_class to connect to Twitter
 		require_once(dirname(__FILE__).'/class_http.php');
 		
+		
 		//set up the connection to the Twitter API
 		$pmcTFconn = new http();
+		$pmcTFconn->dir = dirname(__FILE__)."/cache/";
 		
 		//start the widget display
 		echo $before_widget . $before_title . $pmcTFTitle . $after_title;
 		
 		//lets go get the friends list
-		if (!$pmcTFconn->fetch($pmcURL)) {
+		if (!$pmcTFconn->fetch($pmcURL, "60", "friends.xml")) {
 			echo '<h2>There was a problem getting your friends list</h2>';
 			echo '<p>Unable to retrieve your friends list from Twitter. Please try again later.</p>';
 			echo '<p>For more information regarding possible problems, please see the error log below.</p>';

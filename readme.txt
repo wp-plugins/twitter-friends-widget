@@ -41,6 +41,9 @@ Feedback and requests for new features are welcome. Just leave a comment on the 
 
 == Changelog ==
 
+= Version 1.11 =
+Fixed bug with local caching
+
 = Version 1.1 =
 * Changed from using "normal" size images to "mini" size profile images
 * Added styles to header
