@@ -3,7 +3,7 @@
 Plugin Name: Twitter Friends Widget
 Plugin URI: http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget/
 Description: Widget to display your Twitter Friends in the sidebar
-Version: 1.1
+Version: 1.12
 Author: Paul McCarthy
 Author URI: http://www.paulmc.org/whatithink
 */
@@ -66,7 +66,7 @@ function widget_pmcFriends_init() {
 		echo $before_widget . $before_title . $pmcTFTitle . $after_title;
 		
 		//lets go get the friends list
-		if (!$pmcTFconn->fetch($pmcURL, "60", "friends.xml")) {
+		if (!$pmcTFconn->fetch($pmcURL, "daily", "friends.xml")) {
 			echo '<h2>There was a problem getting your friends list</h2>';
 			echo '<p>Unable to retrieve your friends list from Twitter. Please try again later.</p>';
 			echo '<p>For more information regarding possible problems, please see the error log below.</p>';
@@ -99,7 +99,7 @@ function widget_pmcFriends_init() {
 			$pmcTrimPic = strip_tags($pmcPic);
 			
 			//twitter returns a link to the "normal" profile images, change the links to the "mini" version
-			$pmcTrimPic = str_replace("_normal", "_mini", $pmcTrimPic);
+			$pmcTrimPic = str_replace("_normal.", "_mini.", $pmcTrimPic);
 						
 			array_push($pmcImageURL, $pmcTrimPic);
 		} //close foreach

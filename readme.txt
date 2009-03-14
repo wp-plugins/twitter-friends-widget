@@ -41,6 +41,9 @@ Feedback and requests for new features are welcome. Just leave a comment on the 
 
 == Changelog ==
 
+= Version 1.12 =
+Fixed issue with profile images not being displayed correctly.
+
 = Version 1.11 =
 Fixed bug with local caching
 
