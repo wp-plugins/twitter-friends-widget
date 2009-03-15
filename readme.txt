@@ -39,7 +39,7 @@ Of course it will. That's why there's an option within the plugin to limit the n
 = The table that displays the users doesn't blend in with my blog theme, how do I change it? =
 At the moment, the table CSS styles are hard-coded into the plugin, you can change them by manually editing the "twitter-friends-widget.php" file. The ability to specify styles for the plugin will be added in the next version.
 
-= I get an error message displayed in my sidebar when using this widget =
+= I get an error message displayed in my sidebar when using this widget? =
 The following message may be found if the plugin cache folder is missing, or is not writable:
 
 Warning: Missing argument 1 for http::getFromUrl(), called in ".../wp-content/plugins/twitter-friends-widget/class_http.php" on line 88 and defined in ".../public_html/wp-content/plugins/twitter-friends-widget/class_http.php" on line 137
