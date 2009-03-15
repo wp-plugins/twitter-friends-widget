@@ -3,7 +3,7 @@
 Plugin Name: Twitter Friends Widget
 Plugin URI: http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget/
 Description: Widget to display your Twitter Friends in the sidebar
-Version: 1.12
+Version: 1.13
 Author: Paul McCarthy
 Author URI: http://www.paulmc.org/whatithink
 */
@@ -146,6 +146,8 @@ function widget_pmcFriends_init() {
 			$newoptions['pmc_TF_user'] = strip_tags(stripslashes($_POST['pmc_TF_user']));
 			$newoptions['pmc_TF_rows'] = strip_tags(stripslashes($_POST['pmc_TF_rows']));
 			$newoptions['pmc_TF_limit'] = strip_tags(stripslashes($_POST['pmc_TF_limit']));
+			$newoptions['pmc_TF_bgcolor'] = strip_tags(stripslashes($_POST['pmc_TF_bgcolor']));
+			$newoptions['pmc_TF_fgcolor'] = strip_tags(stripslashes($_POST['pmc_TF_fgcolor']));
 			
 		} //close if
 		
@@ -166,6 +168,8 @@ function widget_pmcFriends_init() {
 		if (!$options['pmc_TF_user']) $options['pmc_TF_user'] = "";
 		if (!$options['pmc_TF_rows']) $options['pmc_TF_rows'] = 5;
 		if (!$options['pmc_TF_limit'] and $options['pmc_TF_limit'] !=0) $options['pmc_TF_limit'] = 20;
+		if (!$options['pmc_TF_bgcolor']) $options['pmc_TF_bgcolor'] = "#000000";
+		if (!$options['pmc_TF_fgcolor']) $options['pmc_TF_fgcolor'] = "#FFFFFF";
 
 		
 		//get the options already saved in the database, encoding any HTML
@@ -173,26 +177,34 @@ function widget_pmcFriends_init() {
 		$pmcTFUser = htmlspecialchars($options['pmc_TF_user'], ENT_QUOTES);
 		$pmcTFRows = htmlspecialchars($options['pmc_TF_rows'], ENT_QUOTES);
 		$pmcTFLimit = htmlspecialchars($options['pmc_TF_limit'], ENT_QUOTES);
+		$pmcTFBGcolor = htmlspecialchars($options['pmc_TF_bgcolor'], ENT_QUOTES);
+		$pmcTFFGcolor = htmlspecialchars($options['pmc_TF_fgcolor'], ENT_QUOTES);
 		
 		//build the control panel
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_title">' . __('Title:') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_title" name="pmc_TF_title" type="text" value="'.$pmcTFTitle.'" /></label></p>';
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_user">' . __('Your Twitter Name:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_user" name="pmc_TF_user" type="text" value="'.$pmcTFUser.'" /></label></p>';
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_rows">' . __('Friends per Row:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_rows" name="pmc_TF_rows" type="text" value="'.$pmcTFRows.'" /></label></p>';
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_limit">' . __('Display Limit (0 for Display all):', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_limit" name="pmc_TF_limit" type="text" value="'.$pmcTFLimit.'" /></label></p>';
+		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_bgcolor">' . __('Background Colour:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_bgcolor" name="pmc_TF_bgcolor" type="text" value="'.$pmcTFBGcolor.'" /></label></p>';
+		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_fgcolor">' . __('Text Colour:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_fg_color" name="pmc_TF_fgcolor" type="text" value="'.$pmcTFFGcolor.'" /></label></p>';
 		echo '<input type="hidden" id="pmc_friends_widget_submit" name="pmc_friends_widget_submit" value="1" />';
 		
 	} //close pmcFriends_control()
 	
 	//function to write the style info to the header
 	function pmcTFStyles() {
+		//get options from the database
+		$pmcOptions = get_option('widget_pmcFriends');
+		$pmcBGcolor = $pmcOptions['pmc_TF_bgcolor'];
+		$pmcFGcolor = $pmcOptions['pmc_TF_fgcolor'];
+		
 		echo '<!-- CSS style for Twitter Friends widget -->' . "\n";
 		echo '<style type="text/css">' . "\n";
-		echo 'table.pmcTFTable {' . "\n" . 'width: 120px; padding: 0; margin: 0; border: 0; border-collapse: collapse; background-color: #fff; color: #000;' . "\n" . '}' . "\n";
-		echo 'td.pmcTFTD {' . "\n" . 'max-width: 24px; max-height: 24px; border: 0; padding: 0; margin: 0; border-collapse: collapse; overflow: hidden; background-color: #fff; color: #000;' . "\n" . '}' . "\n";
+		echo 'table.pmcTFTable {' . "\n" . 'width: 120px; padding: 0; margin: 0; border: 0; border-collapse: collapse; background-color: ' . $pmcBGcolor . '; color: ' . $pmcFGcolor . ';' . "\n" . '}' . "\n";
+		echo 'td.pmcTFTD {' . "\n" . 'max-width: 24px; max-height: 24px; border: 0; padding: 0; margin: 0; border-collapse: collapse; overflow: hidden; background-color: ' . $pmcBGcolor . '; color: ' . $pmcFGcolor . ';' . "\n" . '}' . "\n";
 		echo 'img.pmcTFimg {' . "\n" . 'border: 0; padding: 0; margin: 0; height: 24px; width: 24px;' . "\n" . '}' . "\n";
 		echo '</style>' . "\n";
 	}
-		
 	
 	//register the widget and widget control
 	register_sidebar_widget('Twitter Friends', 'pmcGetFriends');
