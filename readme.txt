@@ -17,6 +17,8 @@ The widget allows you to specify the following:
 1. Your Twitter Name - required.
 1. Friends per Row - how many friends you want displayed in each row. Default is 5. 
 1. Display Limit - how many friends you want to display. By default this is set to 20. Friends are listed in the order of the most recently added to your Twitter profile. Set this to 0 to display all.
+1. Background Colour - the background colour of the table holding the Twitter Profile Images. Default is black (#000000). Use Hex values or the standard HTML named colours.
+1. Text Colour - as the background colour above, but affects the text displayed. Default is white (#FFFFFF). Once again Hex or named colours can be used.
 
 == Installation ==
 
