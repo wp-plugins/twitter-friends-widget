@@ -132,7 +132,7 @@ function widget_pmcFriends_init() {
 		$pmcTable = $pmcTable . '</tr>' . "\n" . '</table>' . "\n";
 
 		//display link to RSS feed
-		$pmcTable .= '<p><a href="https://twitter.com/statuses/user_timeline/' . pmcGetTwitterID() . '.rss" title="Subscribe to my Twitter Feed">Subscribe to my Twitter RSS</a></p>';
+		$pmcTable .= '<p><a href="https://twitter.com/statuses/user_timeline/' . pmcRetrieveTwitterID() . '.rss" title="Subscribe to my Twitter Feed">Subscribe to my Twitter RSS</a></p>';
 
 		//display the table
 		echo $pmcTable;
@@ -213,7 +213,7 @@ function widget_pmcFriends_init() {
 	}
 	
 	//function to get the users twitter id from their username
-	function pmcGetTwitterID() {
+	function pmcRetrieveTwitterID() {
 		//require class_http.php
 		require_once(dirname(__FILE__).'/class_http.php');
 	
