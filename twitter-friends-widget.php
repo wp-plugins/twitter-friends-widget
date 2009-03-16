@@ -154,6 +154,8 @@ function widget_pmcFriends_init() {
 			$newoptions['pmc_TF_user'] = strip_tags(stripslashes($_POST['pmc_TF_user']));
 			$newoptions['pmc_TF_rows'] = strip_tags(stripslashes($_POST['pmc_TF_rows']));
 			$newoptions['pmc_TF_limit'] = strip_tags(stripslashes($_POST['pmc_TF_limit']));
+			$newoptions['pmc_TF_bgcolor'] = strip_tags(stripslashes($_POST['pmc_TF_bgcolor']));
+			$newoptions['pmc_TF_fgcolor'] = strip_tags(stripslashes($_POST['pmc_TF_fgcolor']));
 			
 		} //close if
 		
@@ -206,8 +208,8 @@ function widget_pmcFriends_init() {
 		
 		echo '<!-- CSS style for Twitter Friends widget -->' . "\n";
 		echo '<style type="text/css">' . "\n";
-		echo 'table.pmcTFTable {' . "\n" . 'width: 120px; padding: 0; margin: 0; border: 0; border-collapse: collapse; background-color: ' . $pmcBGcolor . '; color: ' . $pmcFGcolor . ';' . "\n" . '}' . "\n";
-		echo 'td.pmcTFTD {' . "\n" . 'max-width: 24px; max-height: 24px; border: 0; padding: 0; margin: 0; border-collapse: collapse; overflow: hidden; background-color: ' . $pmcBGcolor . '; color: ' . $pmcFGcolor . ';' . "\n" . '}' . "\n";
+		echo 'table.pmcTFTable {' . "\n" . 'width: 120px; padding: 0; margin: 0; border: 0; border-collapse: collapse; background-color: ' . $pmcBGcolor . ' !important; color: ' . $pmcFGcolor . ' !important;' . "\n" . '}' . "\n";
+		echo 'td.pmcTFTD {' . "\n" . 'max-width: 24px; max-height: 24px; border: 0; padding: 0; margin: 0; border-collapse: collapse; overflow: hidden; background-color: ' . $pmcBGcolor . '!important; color: ' . $pmcFGcolor . '!important;' . "\n" . '}' . "\n";
 		echo 'img.pmcTFimg {' . "\n" . 'border: 0; padding: 0; margin: 0; height: 24px; width: 24px;' . "\n" . '}' . "\n";
 		echo '</style>' . "\n";
 	}
