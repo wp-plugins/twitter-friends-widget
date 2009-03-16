@@ -63,6 +63,9 @@ Feedback and requests for new features are welcome. Just leave a comment on the 
 
 == Changelog ==
 
+= Version 1.21 =
+* Fixed bug with background and text colour styles not being applied correctly
+
 = Version 1.2 =
 * Due to a large number of issues with the caching function, caching has been removed. See FAQ for more details.
 * Added link to users Twitter RSS

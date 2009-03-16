@@ -3,7 +3,7 @@
 Plugin Name: Twitter Friends Widget
 Plugin URI: http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget/
 Description: Widget to display your Twitter Friends in the sidebar
-Version: 1.2
+Version: 1.21
 Author: Paul McCarthy
 Author URI: http://www.paulmc.org/whatithink
 */
