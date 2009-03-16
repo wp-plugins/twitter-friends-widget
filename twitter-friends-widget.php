@@ -3,7 +3,7 @@
 Plugin Name: Twitter Friends Widget
 Plugin URI: http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget/
 Description: Widget to display your Twitter Friends in the sidebar
-Version: 1.13
+Version: 1.2
 Author: Paul McCarthy
 Author URI: http://www.paulmc.org/whatithink
 */
@@ -35,6 +35,8 @@ function widget_pmcFriends_init() {
 
 	//function to get the friends list
 	function pmcGetFriends($pmcArgs) {
+		//check the cache file permissions
+		
 		//get the default WordPress widget settings
 		extract($pmcArgs);
 	
@@ -60,13 +62,16 @@ function widget_pmcFriends_init() {
 		
 		//set up the connection to the Twitter API
 		$pmcTFconn = new http();
-		$pmcTFconn->dir = dirname(__FILE__)."/cache/";
 		
 		//start the widget display
 		echo $before_widget . $before_title . $pmcTFTitle . $after_title;
 		
-		//lets go get the friends list
-		if (!$pmcTFconn->fetch($pmcURL, "daily", "friends.xml")) {
+		//to re-enable caching un-comment the line below and change the TTL the the if statement below from "0" to "daily"
+		//don't forget to make the cache folder writable
+//		$pmcTFconn->dir = dirname(__FILE__)."/cache/";
+	
+		//lets go get the friends list (If you want to re-enable caching, change "0" to "daily")
+		if (!$pmcTFconn->fetch($pmcURL, "0", "friends.xml")) {
 			echo '<h2>There was a problem getting your friends list</h2>';
 			echo '<p>Unable to retrieve your friends list from Twitter. Please try again later.</p>';
 			echo '<p>For more information regarding possible problems, please see the error log below.</p>';
@@ -126,6 +131,9 @@ function widget_pmcFriends_init() {
 
 		$pmcTable = $pmcTable . '</tr>' . "\n" . '</table>' . "\n";
 
+		//display link to RSS feed
+		$pmcTable .= '<p><a href="https://twitter.com/statuses/user_timeline/' . pmcGetTwitterID() . '.rss" title="Subscribe to my Twitter Feed">Subscribe to my Twitter RSS</a></p>';
+
 		//display the table
 		echo $pmcTable;
 		
@@ -146,8 +154,6 @@ function widget_pmcFriends_init() {
 			$newoptions['pmc_TF_user'] = strip_tags(stripslashes($_POST['pmc_TF_user']));
 			$newoptions['pmc_TF_rows'] = strip_tags(stripslashes($_POST['pmc_TF_rows']));
 			$newoptions['pmc_TF_limit'] = strip_tags(stripslashes($_POST['pmc_TF_limit']));
-			$newoptions['pmc_TF_bgcolor'] = strip_tags(stripslashes($_POST['pmc_TF_bgcolor']));
-			$newoptions['pmc_TF_fgcolor'] = strip_tags(stripslashes($_POST['pmc_TF_fgcolor']));
 			
 		} //close if
 		
@@ -168,8 +174,8 @@ function widget_pmcFriends_init() {
 		if (!$options['pmc_TF_user']) $options['pmc_TF_user'] = "";
 		if (!$options['pmc_TF_rows']) $options['pmc_TF_rows'] = 5;
 		if (!$options['pmc_TF_limit'] and $options['pmc_TF_limit'] !=0) $options['pmc_TF_limit'] = 20;
-		if (!$options['pmc_TF_bgcolor']) $options['pmc_TF_bgcolor'] = "#000000";
-		if (!$options['pmc_TF_fgcolor']) $options['pmc_TF_fgcolor'] = "#FFFFFF";
+		if (!$options['pmc_TF_bgcolor']) $options['pmc_TF_bgcolor'] = "#FFFFFF";
+		if (!$options['pmc_TF_fgcolor']) $options['pmc_TF_fgcolor'] = "#000000";
 
 		
 		//get the options already saved in the database, encoding any HTML
@@ -177,26 +183,26 @@ function widget_pmcFriends_init() {
 		$pmcTFUser = htmlspecialchars($options['pmc_TF_user'], ENT_QUOTES);
 		$pmcTFRows = htmlspecialchars($options['pmc_TF_rows'], ENT_QUOTES);
 		$pmcTFLimit = htmlspecialchars($options['pmc_TF_limit'], ENT_QUOTES);
-		$pmcTFBGcolor = htmlspecialchars($options['pmc_TF_bgcolor'], ENT_QUOTES);
-		$pmcTFFGcolor = htmlspecialchars($options['pmc_TF_fgcolor'], ENT_QUOTES);
+		$pmcBGcolor = htmlspecialchars($options['pmc_TF_bgcolor'], ENT_QUOTES);
+		$pmcFGcolor = htmlspecialchars($options['pmc_TF_fgcolor'], ENT_QUOTES);
 		
 		//build the control panel
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_title">' . __('Title:') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_title" name="pmc_TF_title" type="text" value="'.$pmcTFTitle.'" /></label></p>';
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_user">' . __('Your Twitter Name:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_user" name="pmc_TF_user" type="text" value="'.$pmcTFUser.'" /></label></p>';
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_rows">' . __('Friends per Row:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_rows" name="pmc_TF_rows" type="text" value="'.$pmcTFRows.'" /></label></p>';
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_limit">' . __('Display Limit (0 for Display all):', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_limit" name="pmc_TF_limit" type="text" value="'.$pmcTFLimit.'" /></label></p>';
-		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_bgcolor">' . __('Background Colour:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_bgcolor" name="pmc_TF_bgcolor" type="text" value="'.$pmcTFBGcolor.'" /></label></p>';
-		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_fgcolor">' . __('Text Colour:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_fg_color" name="pmc_TF_fgcolor" type="text" value="'.$pmcTFFGcolor.'" /></label></p>';
+		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_bgcolor">' . __('Background Colour:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_bgcolor" name="pmc_TF_bgcolor" type="text" value="'.$pmcBGcolor.'" /></label></p>';
+		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_fgcolor">' . __('Text Colour:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_fgcolor" name="pmc_TF_fgcolor" type="text" value="'.$pmcFGcolor.'" /></label></p>';
 		echo '<input type="hidden" id="pmc_friends_widget_submit" name="pmc_friends_widget_submit" value="1" />';
 		
 	} //close pmcFriends_control()
 	
 	//function to write the style info to the header
 	function pmcTFStyles() {
-		//get options from the database
-		$pmcOptions = get_option('widget_pmcFriends');
-		$pmcBGcolor = $pmcOptions['pmc_TF_bgcolor'];
-		$pmcFGcolor = $pmcOptions['pmc_TF_fgcolor'];
+		//get styles options
+		$pmcStyles = get_option('widget_pmcFriends');
+		$pmcBGcolor = $pmcStyles['pmc_TF_bgcolor'];
+		$pmcFGcolor = $pmcStyles['pmc_TF_fgcolor'];
 		
 		echo '<!-- CSS style for Twitter Friends widget -->' . "\n";
 		echo '<style type="text/css">' . "\n";
@@ -206,6 +212,40 @@ function widget_pmcFriends_init() {
 		echo '</style>' . "\n";
 	}
 	
+	//function to get the users twitter id from their username
+	function pmcGetTwitterID() {
+		//require class_http.php
+		require_once(dirname(__FILE__).'/class_http.php');
+	
+		//create a new connection
+		$pmcTwitterConn = new http();
+	
+		//get the Twitter username from post variable
+		$pmcTwitterOptions = get_option('widget_pmcFriends');
+		$pmcTwitterUser = $pmcTwitterOptions['pmc_TF_user'];
+	
+		//set the url to the Twitter API
+		$pmcTwitterAPI = 'http://twitter.com/users/show/' . $pmcTwitterUser . '.xml';
+	
+		//make sure that we can connect, if not display an error message
+		if (!$pmcTwitterConn->fetch($pmcTwitterAPI, "0", "twitter")) {
+			echo "<h2>There is a problem with the http request!</h2>";
+  			echo $pmcTwitterConn->log;
+	  		exit();
+		}
+	
+		//if we have connected, then get the data.
+		//as this is xml data, we are lookig for the ID key and it's value.
+		$pmcTwitterData=$pmcTwitterConn->body;
+		preg_match ('/<id>(.*)<\/id>/', $pmcTwitterData, $matches);	
+	
+		//remove the <id></id> HTML tags from the returned key
+		$pmcTrimID = strip_tags($matches[0]);
+	
+		//return the Twitter ID
+		return $pmcTrimID;
+		
+	}
 	//register the widget and widget control
 	register_sidebar_widget('Twitter Friends', 'pmcGetFriends');
 	register_widget_control('Twitter Friends', 'pmcFriends_control', 300, 300);
