@@ -3,7 +3,7 @@
 Plugin Name: Twitter Friends Widget
 Plugin URI: http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget/
 Description: Widget to display your Twitter Friends in the sidebar
-Version: 2.0
+Version: 1.21
 Author: Paul McCarthy
 Author URI: http://www.paulmc.org/whatithink
 */
@@ -25,38 +25,59 @@ Author URI: http://www.paulmc.org/whatithink
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-//wrap widget functions in an init
+//function called when widget is initiated
 function widget_pmcFriends_init() {
-	//check that WP can use widgets
+	
+	//check that we can use widgets
 	if (!function_exists('register_sidebar_widget')) {
 		return;
-	} //close if
+	}
+
+	//function to get the friends list
+	function pmcGetFriends($pmcArgs) {
+		//check the cache file permissions
+		
+		//get the default WordPress widget settings
+		extract($pmcArgs);
 	
-	//function to get Twitter Friends using Twitter API
-	function pmcGetFriends() {
-		//get the widget settings
+		//get this widget's settings
 		$pmcOptions = get_option('widget_pmcFriends');
+		$pmcTFTitle = $pmcOptions['pmc_TF_title'];
+		$pmcTFUser = $pmcOptions['pmc_TF_user'];
+		$pmcTFRows = (int) $pmcOptions['pmc_TF_rows'];
+		$pmcTFLimit = (int) $pmcOptions['pmc_TF_limit'];
 		
-		//store username
-		$pmcUser = $pmcOptions['pmc_TF_user'];
+		//check that the user has not set 0, if they have we'll use the default.
+		if ($pmcTFRows == 0) {
+			$pmcTFRows = 5;
+		}
+			
+	
+		//build the URL to retrieve the friends list from Twitter
+		$pmcURL = 'http://twitter.com/statuses/friends/' . $pmcTFUser . '.xml';
 		
-		//create tge url for the Twitter API
-		$pmcURL = 'http://twitter.com/statuses/friends/' . $pmcUser . '.xml';
-		
-		//use class_http to retrieve the friends list
-		//list is in XML format - see Twitter API for more details
+		//we'll use Troy Wolf's http_class to connect to Twitter
 		require_once(dirname(__FILE__).'/class_http.php');
 		
-		//create the connection
+		
+		//set up the connection to the Twitter API
 		$pmcTFconn = new http();
 		
-		//fetch the url
-		if (!$pmcTFconn->fetch($pmcURL, "0", "friends")) {
-			echo '<h3>Error</h3>';
-			echo '<p>There was an error retrieving your friends list</p>';
+		//start the widget display
+		echo $before_widget . $before_title . $pmcTFTitle . $after_title;
+		
+		//to re-enable caching un-comment the line below and change the TTL the the if statement below from "0" to "daily"
+		//don't forget to make the cache folder writable
+//		$pmcTFconn->dir = dirname(__FILE__)."/cache/";
+	
+		//lets go get the friends list (If you want to re-enable caching, change "0" to "daily")
+		if (!$pmcTFconn->fetch($pmcURL, "0", "friends.xml")) {
+			echo '<h2>There was a problem getting your friends list</h2>';
+			echo '<p>Unable to retrieve your friends list from Twitter. Please try again later.</p>';
+			echo '<p>For more information regarding possible problems, please see the error log below.</p>';
 			echo $pmcTFconn->log;
 			exit();
-		} //close if
+		} // close if
 		
 		//store the friends list
 		$pmcTFlist = $pmcTFconn->body;
@@ -72,8 +93,7 @@ function widget_pmcFriends_init() {
 		$pmcFriends[] = "";
 		$pmcImageURL[] ="";
 		
-		//loop through both arrays, and strip the XML tags
-		//store the results in an array
+		//loop through the array, and strip the XML tags
 		foreach ($pmcScreen[0] as $pmcName) {
 			$pmcTrimName = strip_tags($pmcName);
 			array_push($pmcFriends, $pmcTrimName);
@@ -89,227 +109,39 @@ function widget_pmcFriends_init() {
 			array_push($pmcImageURL, $pmcTrimPic);
 		} //close foreach
 		
-		//get the length of the friends array
-		$pmcFriendsLen = count($pmcFriends);
-		
-		//we now loop through the array of screen_names and check if it's in the database
-		for ($i=0; $i<$pmcFriendsLen; $i++) {
-			if (!pmcCheckFriends($pmcFriends[$i])) {
-				pmcUpdateFriends($pmcFriends[$i], $pmcImageURL[$i]);
-			} //close if
-		} //close for
-	} //close pmcGetFriends
-	
-	//function to check if the screen_name is in the database
-	function pmcCheckFriends($pmcScreenName) {
-		//use the WordPress db class
-		global $wpdb;
-		
-		//set the table name
-		$pmcTableName = $wpdb->prefix . 'twitterfriends';
-		
-		//check that the table exists
-		if ($wpdb->get_var("show tables like '" . $pmcTableName . "'") != $pmcTableName) {
-			//create the table
-			pmcAddTable();
+
+		//if the user has specified a limit of 0, we'll display all the friends, otherwise apply the limit
+		if ($pmcTFLimit == 0) {
+			//get the length of the array - i.e. all friends
+			$pmcCount = count($pmcFriends);
 		} else {
-			//build sql statement to check for screen_name
-			$SQL = "SELECT * FROM " . $pmcTableName . " WHERE `screen_name` like " . $pmcScreenName . "`";
-			
-			//run the query
-			if (!$wpdb->get_var($SQL)) {
-				//if the name isn't already in the database, return false
-				return FALSE;
-			} else {
-				return TRUE;
-			} //close inner if
-		} //close outer if
-	} //close pmcCheckFriends
-	
-	//function to add friends details to the database
-	function pmcUpdateFriends($pmcName, $pmcImage) {
-		//use WordPress db class
-		global $wpdb;
-		
-		//set the table name
-		$pmcTableName = $wpdb->prefix . 'twitterfriends';
-		
-		//check that the database exists
-		if ($wpdb->get_var("show tables like '" . $pmcTableName . "'") != $pmcTableName) {
-			//create the table
-			pmcAddTable();
-		} else {
-			//build the sql to add friends to the database
-			$SQL = "INSERT INTO `" . $pmcTableName . "` VALUES ('', '" . $wpdb->escape($pmcName) . "','" . $wpdb->escape($pmcImage) . "')";
-			
-			//run the query
-			$result = $wpdb->query($SQL);
-			
-			//check that the query ran correctly
-			if (!$result) {
-				echo 'Database was not updated with: ' . $pmcName . ' and ' . $pmcImage . '.' . "\n";
-			} //close inner if
-		} //close outer if
-	} //close pmcUpdateFriends
-	
-	//function to add the table to the database
-	function pmcAddTable() {
-		//use WordPress db class
-		global $wpdb;
-		
-		//set table name
-		$pmcTableName = $wpdb->prefix . 'twitterfriends';
-		
-		//check to see if the table already exists
-		if ($wpdb->get_var("show tables like '" . $pmcTableName . "'") != $pmcTableName) {
-			
-			//build the sql to create the table
-			$SQL = "CREATE TABLE " . $pmcTableName . " (
-				id mediumint(9) NOT NULL AUTO_INCREMENT,
-				screen_name text NOT NULL,
-				profile_image_url text NOT NULL,
-				UNIQUE KEY id (id)
-				);";
-				
-			//use the WordPress dbDelta function to create the table
-			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-			dbDelta($SQL);
+			$pmcCount = $pmcTFLimit;
 		} //close if
-	} //close pmcAddTable
-	
-	//function to display friends in a HTML table
-	function pmcDisplayFriends($pmcArgs) {
-		//extract the Widget display settings
-		extract($pmcArgs);
 		
-		//use wpdb class
-		global $wpdb;
-		
-		//set table name
-		$pmcTableName = $wpdb->prefix . 'twitterfriends';
-		
-		//get the widget options
-		$pmcOptions = get_option('widget_pmcFriends');
-		$pmcTitle = $pmcOptions['pmc_TF_title'];
-		$pmcTFUser = $pmcOptions['pmc_TF_user'];
-		$pmcTFRows = (int) $pmcOptions['pmc_TF_rows'];
-		$pmcTFLimit = (int) $pmcOptions['pmc_TF_limit'];
-		
-		//check that the user has set a value for the rows to be used
-		if ($pmcTFRows == 0) {
-			//if not use the default of 5
-			$pmcTFRows = 5;
-		}
-		
-		//check that the database table exists
-		if ($wpdb->get_var("show tables like '" . $pmcTableName . "'") != $pmcTableName) {
-			//if not, add it
-			pmcAddTable();
-			//get the friends list
-			pmcGetFriends();
-		}
-		
-		//create sql to get screen names from  database
-		$SQL = "SELECT `screen_name`, `profile_image_url` FROM " . $pmcTableName;
-		
-		//run the query and return an associative array
-		$pmcResults = $wpdb->get_results($SQL, ARRAY_N);
-		
-		//get the length of the returned array
-		$pmcResultsLen = count($pmcResults);
-		
-		//start building the widget output
-		echo $before_widget . $before_title . $pmcTitle . $after_title;
-		
-		//start the HTML table
-		$pmcHTML = '<table class="pmcTFTable"><tr>';
-		
-		//iterate through the arrays and build the HTML table
-		for ($i=1; $i<$pmcResultsLen; $i++) {
-			$pmcHTML .= '<td class="pmcTFTD"><a href="http://twitter.com/' . $pmcResults[$i][0] . '" title="' . $pmcResults[$i][0] . '"><img class="pmcTFimg" src="' . $pmcResults[$i][1] . '" alt="' . $pmcResults[$i][0] . '" /></a></td>' . "\n";
-			//check if we have reached the end of a row
+		//build the table
+		$pmcTable = "\n" . '<table class="pmcTFTable">' . "\n" . '<tr>'  . "\n";
+
+		//we'll create the table with the number of rows specified by the user, default is 5
+		for ($i = 1; $i < $pmcCount; $i++) {
+			$pmcTable = $pmcTable . '<td class="pmcTFTD"><a style="color: #000;" href="http://twitter.com/' . $pmcFriends[$i] . '" title="' . $pmcFriends[$i] . '"><img class="pmcTFimg" src="' . $pmcImageURL[$i] . '" alt="' . $pmcFriends[$i] . '" /></a></td>' . "\n";
 			if ($i % $pmcTFRows == 0) {
-				$pmcHTML .= '</tr><tr>' . "\n";
+				$pmcTable = $pmcTable . '</tr><tr>' . "\n";
 			} //close if
 		} //close for
-		
-		//close the HTML table
-		$pmcHTML .= '</tr>' . "\n" . '</table>' . "\n";
-		
-		//add the link to the rss feed
-		$pmcHTML .= '<p><a href="https://twitter.com/statuses/user_timeline/' . pmcRetrieveTwitterID() . '.rss" title="Subscribe to my Twitter Feed">';
-		$pmcHTML .= '<img style="margin: 0 10px 0 0; border: 0; text-decoration: none;" src="' . get_bloginfo('wpurl') . '/wp-content/plugins/twitter-friends-widget/rss.png" title="Subscribe to my Twitter RSS" alt="RSS: " /></a>';
-		$pmcHTML .= '<a href="https://twitter.com/statuses/user_timeline/' . pmcRetrieveTwitterID() . '.rss" title="Subscribe to my Twitter Feed">';
-		$pmcHTML .= 'Subscribe to my Twitter RSS</a></p>';
-		
-		//display the HTML
-		echo $pmcHTML;
+
+		$pmcTable = $pmcTable . '</tr>' . "\n" . '</table>' . "\n";
+
+		//display link to RSS feed
+		$pmcTable .= '<p><a href="https://twitter.com/statuses/user_timeline/' . pmcRetrieveTwitterID() . '.rss" title="Subscribe to my Twitter Feed">Subscribe to my Twitter RSS</a></p>';
+
+		//display the table
+		echo $pmcTable;
 		
 		//close the widget
 		echo $after_widget;
-	} //close pmcDisplayFriends
-	
-	//function to get the users twitter id from their username
-	function pmcRetrieveTwitterID() {
-		//check if we have stored the ID already
-		//get the Twitter username from database
-		$pmcTwitterOptions = get_option('widget_pmcFriends');
-		$pmcTwitterUser = $pmcTwitterOptions['pmc_TF_user'];
-		$pmcTwitterID = get_option('pmc_TF_ID');
 		
-		if (!$pmcTwitterID) {
+	} //close pmcGetFriends
 
-			//require class_http.php
-			require_once(dirname(__FILE__).'/class_http.php');
-	
-			//create a new connection
-			$pmcTwitterConn = new http();
-	
-			//set the url to the Twitter API
-			$pmcTwitterAPI = 'http://twitter.com/users/show/' . $pmcTwitterUser . '.xml';
-	
-			//make sure that we can connect, if not display an error message
-			if (!$pmcTwitterConn->fetch($pmcTwitterAPI, "0", "twitter")) {
-				echo "<h2>There is a problem with the http request!</h2>";
-  				echo $pmcTwitterConn->log;
-		  		exit();
-			} //close if
-	
-			//if we have connected, then get the data.
-			//as this is xml data, we are lookig for the ID key and it's value.
-			$pmcTwitterData=$pmcTwitterConn->body;
-			preg_match ('/<id>(.*)<\/id>/', $pmcTwitterData, $matches);	
-	
-			//remove the <id></id> HTML tags from the returned key
-			$pmcTrimID = strip_tags($matches[0]);
-			
-			//add the setting to the database
-			add_option('pmc_TF_ID', $pmcTrimID);
-		
-			//set the return variable
-			$pmcTwitterID = $pmcTrimID;
-		} //close if
-	
-		//return the Twitter ID
-		return $pmcTwitterID;
-		
-	}//close pmcRetrieveTwitterID
-	
-	//function to write the style info to the header
-	function pmcTFStyles() {
-		//get styles options
-		$pmcStyles = get_option('widget_pmcFriends');
-		$pmcBGcolor = $pmcStyles['pmc_TF_bgcolor'];
-		$pmcFGcolor = $pmcStyles['pmc_TF_fgcolor'];
-		
-		echo '<!-- CSS style for Twitter Friends widget -->' . "\n";
-		echo '<style type="text/css">' . "\n";
-		echo 'table.pmcTFTable {' . "\n" . 'width: 120px; padding: 0; margin: 20px 0; border: 0; border-collapse: collapse; background-color: ' . $pmcBGcolor . ' !important; color: ' . $pmcFGcolor . ' !important;' . "\n" . '}' . "\n";
-		echo 'td.pmcTFTD {' . "\n" . 'max-width: 24px; max-height: 24px; border: 0; padding: 0; margin: 0; border-collapse: collapse; overflow: hidden; background-color: ' . $pmcBGcolor . '!important; color: ' . $pmcFGcolor . '!important;' . "\n" . '}' . "\n";
-		echo 'img.pmcTFimg {' . "\n" . 'border: 0; padding: 0; margin: 0; height: 24px; width: 24px;' . "\n" . '}' . "\n";
-		echo '</style>' . "\n";
-	}
-	
 	//function to display widget control
 	function pmcFriends_control() {
 		//get the options from the WordPress database
@@ -367,31 +199,64 @@ function widget_pmcFriends_init() {
 		
 	} //close pmcFriends_control()
 	
-	//function to add database update to wp_cron
-	function pmcAddCron() {
-		wp_schedule_event(time(), 'hourly', 'pmc_get_friends_hourly');
-	} //close pmcAddCron
-	
-	//function to clear wp_cron
-	function pmcClearCron() {
-		wp_clear_scheduled_hook('pmc_get_friends_hourly');
-	} //close pmcClearCron
+	//function to write the style info to the header
+	function pmcTFStyles() {
+		//get styles options
+		$pmcStyles = get_option('widget_pmcFriends');
+		$pmcBGcolor = $pmcStyles['pmc_TF_bgcolor'];
+		$pmcFGcolor = $pmcStyles['pmc_TF_fgcolor'];
 		
-	//register widget and widget control
-	register_sidebar_widget('Twitter Friends', 'pmcDisplayFriends');
+		echo '<!-- CSS style for Twitter Friends widget -->' . "\n";
+		echo '<style type="text/css">' . "\n";
+		echo 'table.pmcTFTable {' . "\n" . 'width: 120px; padding: 0; margin: 0; border: 0; border-collapse: collapse; background-color: ' . $pmcBGcolor . ' !important; color: ' . $pmcFGcolor . ' !important;' . "\n" . '}' . "\n";
+		echo 'td.pmcTFTD {' . "\n" . 'max-width: 24px; max-height: 24px; border: 0; padding: 0; margin: 0; border-collapse: collapse; overflow: hidden; background-color: ' . $pmcBGcolor . '!important; color: ' . $pmcFGcolor . '!important;' . "\n" . '}' . "\n";
+		echo 'img.pmcTFimg {' . "\n" . 'border: 0; padding: 0; margin: 0; height: 24px; width: 24px;' . "\n" . '}' . "\n";
+		echo '</style>' . "\n";
+	}
+	
+	//function to get the users twitter id from their username
+	function pmcRetrieveTwitterID() {
+		//require class_http.php
+		require_once(dirname(__FILE__).'/class_http.php');
+	
+		//create a new connection
+		$pmcTwitterConn = new http();
+	
+		//get the Twitter username from post variable
+		$pmcTwitterOptions = get_option('widget_pmcFriends');
+		$pmcTwitterUser = $pmcTwitterOptions['pmc_TF_user'];
+	
+		//set the url to the Twitter API
+		$pmcTwitterAPI = 'http://twitter.com/users/show/' . $pmcTwitterUser . '.xml';
+	
+		//make sure that we can connect, if not display an error message
+		if (!$pmcTwitterConn->fetch($pmcTwitterAPI, "0", "twitter")) {
+			echo "<h2>There is a problem with the http request!</h2>";
+  			echo $pmcTwitterConn->log;
+	  		exit();
+		}
+	
+		//if we have connected, then get the data.
+		//as this is xml data, we are lookig for the ID key and it's value.
+		$pmcTwitterData=$pmcTwitterConn->body;
+		preg_match ('/<id>(.*)<\/id>/', $pmcTwitterData, $matches);	
+	
+		//remove the <id></id> HTML tags from the returned key
+		$pmcTrimID = strip_tags($matches[0]);
+	
+		//return the Twitter ID
+		return $pmcTrimID;
+		
+	}
+	//register the widget and widget control
+	register_sidebar_widget('Twitter Friends', 'pmcGetFriends');
 	register_widget_control('Twitter Friends', 'pmcFriends_control', 300, 300);
-} //close widget_pmcTwitterFriends_init
 
-//register activation hook for wp_cron
-register_activation_hook(__FILE__, 'pmcAddCron');
-//register deactivation hook for wp_cron
-register_deactivation_hook(__FILE__, 'pmcClearCron');
+} //close widget_pmcFriends_init
 
-//action to have WordPress load the widget
+//have WordPress load the widget
 add_action('widgets_init', 'widget_pmcFriends_init');
-//action to add styles to the header
-add_action('wp_head', 'pmcTFStyles');
-//add action to call function to add scheduled events
-add_action('pmc_get_friends_hourly', 'pmcGetFriends');
 
+//add styles to the header
+add_action('wp_head', 'pmcTFStyles');
 ?>
