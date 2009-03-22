@@ -38,30 +38,36 @@ Of course it will. That's why there's an option within the plugin to limit the n
 = The table that displays the users doesn't blend in with my blog theme, how do I change it? =
 In the Widget settings panel, you can specify a background colour and a text colour. Use either hex values (e.g. #FFFFFF is white, or the standard HTML colours: red, green, blue etc.)
 
-= How do I re-enable caching? =
-Due to a large number of bug reports regarding the caching function, I have temporarily disabled it in this version of the plugin. If you wish, you can re-enable it manually, though it will require editing of the plugin files.
+= How do I enable caching? =
+Caching is now enable by default. The plugin creates a table in the WordPress database to store the screen names and profile image url's of your friends. The cache is updated on a hourly basis by WP-Cron.
 
-Firstly you will need to edit the twitter-friends-widget.php file. Look for the following at line 71:
+= Can I disable caching? =
+At the moment, no. I may add an option to disable caching, but I don't see any reason to. Getting the friends list from Twitter each time the page is loaded is slow, and if for any reason Twitter is down, your friends list won't be displayed. By using the cache, the plugin will have something to display. It might not reflect the latest followers you've added, but it will show something.
 
-//		$pmcTFconn->dir = dirname(__FILE__)."/cache/";
+= How often does the cache update? =
+The cache uses wp_cron to update itself automatically, and this is set to run an update on an hourly basis. WP-Cron only runs when your website has been visited, so it may take slightly longer than an hour to update.
 
-Delete the comment marks and then scroll to line 74:
+= Can I change the update frequency? =
+Not at the moment. I will be adding an option to the plugin settings to change the frequency.
 
-if (!$pmcTFconn->fetch($pmcURL, "0", "friends.xml")) {
+= The RSS icon does not appear beside the subscribe link =
+The path to the RSS icon is hard-coded as follows:
 
-Change the "0" to "daily", including the quotation marks. (You can set this TTL to any time you wish, the caching period is measured in seconds.)
+[your WordPress URL]/wp-contents/plugins/twitter-friends-widget/rss.png
 
-Once caching has been enabled in the plugin, you will need to create a folder called "cache" in the "twitter-friends-widget" folder. This folder must be writable.
-
-= I have enabled caching, but I keep getting an error message. Why? =
-If you receive the following error after manually enabling caching, then you should double check that the "cache" folder is writable:
-
-Warning: Missing argument 1 for http::getFromUrl(), called in ".../wp-content/plugins/twitter-friends-widget/class_http.php" on line 88 and defined in ".../public_html/wp-content/plugins/twitter-friends-widget/class_http.php"
+If you have modified your WordPress install so that your plugins are not stored in the default plugins directory, then the icon will not be found. Edit line 241 of twitter-friends-widget.php to reflect your current plugins directory and it should work again.
 
 == Feedback ==
 Feedback and requests for new features are welcome. Just leave a comment on the plugin homepage. (http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget)
 
 == Changelog ==
+
+= Version 2.0 =
+* Complete re-write of the plugin
+* Added caching via a new table added to the WordPress database
+* Added cache updating via wp-cron
+* Added option that permanantly stores Twitter ID, Twitter API only needs to be called once to get the ID
+* Added RSS icon to subscribe link
 
 = Version 1.21 =
 * Fixed bug with background and text colour styles not being applied correctly
@@ -89,4 +95,3 @@ Fixed bug with local caching
 == To Do ==
 * Add option to specify large or mini styles
 * Add check to ensure that user name is entered.
-* Work out caching bugs
