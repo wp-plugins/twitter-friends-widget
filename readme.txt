@@ -45,10 +45,10 @@ Caching is now enable by default. The plugin creates a table in the WordPress da
 At the moment, no. I may add an option to disable caching, but I don't see any reason to. Getting the friends list from Twitter each time the page is loaded is slow, and if for any reason Twitter is down, your friends list won't be displayed. By using the cache, the plugin will have something to display. It might not reflect the latest followers you've added, but it will show something.
 
 = How often does the cache update? =
-The cache uses wp_cron to update itself automatically, and this is set to run an update on an hourly basis. WP-Cron only runs when your website has been visited, so it may take slightly longer than an hour to update.
+The default setting is 3600 seconds, (one hour), but this can be changed in the widget options. I would reccomend that you don't set this to 0 if you have a lot of Twitter friends, as the page load time will increase drastically.
 
-= Can I change the update frequency? =
-Not at the moment. I will be adding an option to the plugin settings to change the frequency.
+= Why doesn't my page update exactly after x seconds? =
+The plugin will only update when the page is loaded. So if you set the update interval to 3600 seonds, it will update the cache the next time the page is loaded after that hour has passed.
 
 = The RSS icon does not appear beside the subscribe link =
 The path to the RSS icon is hard-coded as follows:
@@ -61,6 +61,10 @@ If you have modified your WordPress install so that your plugins are not stored 
 Feedback and requests for new features are welcome. Just leave a comment on the plugin homepage. (http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget)
 
 == Changelog ==
+
+= Version 2.1 =
+* Removed wp-cron based caching as this was unreliable.
+* Added my own simple scheduler for updating the cache.
 
 = Version 2.0 =
 * Complete re-write of the plugin
