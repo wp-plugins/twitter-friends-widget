@@ -55,12 +55,15 @@ The path to the RSS icon is hard-coded as follows:
 
 [your WordPress URL]/wp-contents/plugins/twitter-friends-widget/rss.png
 
-If you have modified your WordPress install so that your plugins are not stored in the default plugins directory, then the icon will not be found. Edit line 241 of twitter-friends-widget.php to reflect your current plugins directory and it should work again.
+If you have modified your WordPress install so that your plugins are not stored in the default plugins directory, then the icon will not be found. Edit line 250 of twitter-friends-widget.php to reflect your current plugins directory and it should work again.
 
 == Feedback ==
 Feedback and requests for new features are welcome. Just leave a comment on the plugin homepage. (http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget)
 
 == Changelog ==
+
+= Version 2.2 =
+* Fixed a bug where ther limit specified in the widget settings was not being applied.
 
 = Version 2.1 =
 * Removed wp-cron based caching as this was unreliable.

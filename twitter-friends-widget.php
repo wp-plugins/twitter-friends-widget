@@ -3,7 +3,7 @@
 Plugin Name: Twitter Friends Widget
 Plugin URI: http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget/
 Description: Widget to display your Twitter Friends in the sidebar
-Version: 2.1beta
+Version: 2.2
 Author: Paul McCarthy
 Author URI: http://www.paulmc.org/whatithink
 */
@@ -218,6 +218,15 @@ function widget_pmcFriends_init() {
 		//get the length of the returned array
 		$pmcResultsLen = count($pmcResults);
 		
+		//check if the user has set a limit.
+		//if the limit is set to 0, show all
+		if ($pmcTFLimit == 0) {
+			$pmcTFLimit = $pmcResultsLen;
+		} else {
+			//because the array starts from 1
+			$pmcTFLimit = $pmcTFLimit + 1;
+		}
+		
 		//start building the widget output
 		echo $before_widget . $before_title . $pmcTitle . $after_title;
 		
@@ -225,7 +234,7 @@ function widget_pmcFriends_init() {
 		$pmcHTML = '<table class="pmcTFTable"><tr class="pmcTFTR">';
 		
 		//iterate through the arrays and build the HTML table
-		for ($i=1; $i<$pmcResultsLen; $i++) {
+		for ($i=1; $i<$pmcTFLimit; $i++) {
 			$pmcHTML .= '<td class="pmcTFTD"><a href="http://twitter.com/' . $pmcResults[$i][0] . '" title="' . $pmcResults[$i][0] . '"><img class="pmcTFimg" src="' . $pmcResults[$i][1] . '" alt="' . $pmcResults[$i][0] . '" /></a></td>' . "\n";
 			//check if we have reached the end of a row
 			if ($i % $pmcTFRows == 0) {
