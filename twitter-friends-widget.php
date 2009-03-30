@@ -3,7 +3,7 @@
 Plugin Name: Twitter Friends Widget
 Plugin URI: http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget/
 Description: Widget to display your Twitter Friends in the sidebar
-Version: 2.2
+Version: 2.3
 Author: Paul McCarthy
 Author URI: http://www.paulmc.org/whatithink
 */
@@ -194,6 +194,8 @@ function widget_pmcFriends_init() {
 		$pmcTFUser = $pmcOptions['pmc_TF_user'];
 		$pmcTFRows = (int) $pmcOptions['pmc_TF_rows'];
 		$pmcTFLimit = (int) $pmcOptions['pmc_TF_limit'];
+		$pmcTFShowRSS = $pmcOptions['pmc_TF_show_rss'];
+		$pmcTFTitleLink = $pmcOptions['pmc_TF_title_link'];
 		
 		//check that the user has set a value for the rows to be used
 		if ($pmcTFRows == 0) {
@@ -228,7 +230,27 @@ function widget_pmcFriends_init() {
 		}
 		
 		//start building the widget output
-		echo $before_widget . $before_title . $pmcTitle . $after_title;
+		echo $before_widget . $before_title;
+		
+		//write the link as selected by the user
+		switch ($pmcTFTitleLink) {
+			case 'none':
+				echo $pmcTitle;
+				break;
+			case 'page':
+				echo '<a href="http://twitter.com/' . $pmcTFUser . '" title="My Twitter Home Timeline">' . $pmcTitle . '</a>';
+				break;
+			case 'rss':
+				echo '<a href="https://twitter.com/statuses/user_timeline/' . pmcRetrieveTwitterID() . '.rss" title="Subscribe to my Twitter Feed">';
+				echo '<img style="margin: 0 10px 0 0; border: 0; text-decoration: none;" src="' . get_bloginfo('wpurl') . '/wp-content/plugins/twitter-friends-widget/rss.png" title="Subscribe to my Twitter RSS" alt="RSS: " />' . $pmcTitle . '</a>';
+				break;
+			default:
+				echo $pmcTitle;
+				break;
+		}
+		
+		//close the widget title
+		echo $after_title;
 		
 		//start the HTML table
 		$pmcHTML = '<table class="pmcTFTable"><tr class="pmcTFTR">';
@@ -245,11 +267,13 @@ function widget_pmcFriends_init() {
 		//close the HTML table
 		$pmcHTML .= '</tr>' . "\n" . '</table>' . "\n";
 		
-		//add the link to the rss feed
-		$pmcHTML .= '<p><a href="https://twitter.com/statuses/user_timeline/' . pmcRetrieveTwitterID() . '.rss" title="Subscribe to my Twitter Feed">';
-		$pmcHTML .= '<img style="margin: 0 10px 0 0; border: 0; text-decoration: none;" src="' . get_bloginfo('wpurl') . '/wp-content/plugins/twitter-friends-widget/rss.png" title="Subscribe to my Twitter RSS" alt="RSS: " /></a>';
-		$pmcHTML .= '<a href="https://twitter.com/statuses/user_timeline/' . pmcRetrieveTwitterID() . '.rss" title="Subscribe to my Twitter Feed">';
-		$pmcHTML .= 'Subscribe to my Twitter RSS</a></p>';
+		//check if the user wants to display the RSS link and add the link to the rss feed
+		if ($pmcTFShowRSS) {
+			$pmcHTML .= '<p><a href="https://twitter.com/statuses/user_timeline/' . pmcRetrieveTwitterID() . '.rss" title="Subscribe to my Twitter Feed">';
+			$pmcHTML .= '<img style="margin: 0 10px 0 0; border: 0; text-decoration: none;" src="' . get_bloginfo('wpurl') . '/wp-content/plugins/twitter-friends-widget/rss.png" title="Subscribe to my Twitter RSS" alt="RSS: " /></a>';
+			$pmcHTML .= '<a href="https://twitter.com/statuses/user_timeline/' . pmcRetrieveTwitterID() . '.rss" title="Subscribe to my Twitter Feed">';
+			$pmcHTML .= 'Subscribe to my Twitter RSS</a></p>';
+		}
 		
 		//display the HTML
 		echo $pmcHTML;
@@ -368,6 +392,8 @@ function widget_pmcFriends_init() {
 			$newoptions['pmc_TF_bgcolor'] = strip_tags(stripslashes($_POST['pmc_TF_bgcolor']));
 			$newoptions['pmc_TF_fgcolor'] = strip_tags(stripslashes($_POST['pmc_TF_fgcolor']));
 			$newoptions['pmc_TF_cache'] = strip_tags(stripslashes($_POST['pmc_TF_cache']));
+			$newoptions['pmc_TF_show_rss'] = strip_tags(stripslashes($_POST['pmc_TF_show_rss']));
+			$newoptions['pmc_TF_title_link'] = strip_tags(stripslashes($_POST['pmc_TF_title_link']));
 			
 		} //close if
 		
@@ -391,6 +417,7 @@ function widget_pmcFriends_init() {
 		if (!$options['pmc_TF_bgcolor']) $options['pmc_TF_bgcolor'] = "#FFFFFF";
 		if (!$options['pmc_TF_fgcolor']) $options['pmc_TF_fgcolor'] = "#000000";
 		if (!$options['pmc_TF_cache']) $options['pmc_TF_cache'] = 3600;
+		if (!$options['pmc_TF_title_link']) $options['pmc_TF_title_link'] = 'none';
 
 		
 		//get the options already saved in the database, encoding any HTML
@@ -401,19 +428,61 @@ function widget_pmcFriends_init() {
 		$pmcBGcolor = htmlspecialchars($options['pmc_TF_bgcolor'], ENT_QUOTES);
 		$pmcFGcolor = htmlspecialchars($options['pmc_TF_fgcolor'], ENT_QUOTES);
 		$pmcCacheUpdate = htmlspecialchars($options['pmc_TF_cache'], ENT_QUOTES);
+		$pmcShowRSS = htmlspecialchars($options['pmc_TF_show_rss'], ENT_QUOTES);
+		$pmcUpdateUser = htmlspecialchars($options['pmc_TF_update_user'], ENT_QUOTES);
+		$pmcTFTitleLink = htmlspecialchars($options['pmc_TF_title_link'], ENT_QUOTES);
+		
+		//code to automatically enable checkbox if user has enabled setting
+		if ($pmcShowRSS) {
+			$pmcShowRSS = ' checked="yes" ';
+		} else {
+			$pmcShowRSS = '';
+		}
 		
 		//build the control panel
-		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_title">' . __('Title:') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_title" name="pmc_TF_title" type="text" value="'.$pmcTFTitle.'" /></label></p>';
+		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_title">' . __('Title:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_title" name="pmc_TF_title" type="text" value="'.$pmcTFTitle.'" /></label></p>';
+		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_title_link">' . __('Title Link:', 'widgets');
+		echo pmcWriteSelect($pmcTFTitleLink);
+		echo '</label></p>';
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_user">' . __('Your Twitter Name:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_user" name="pmc_TF_user" type="text" value="'.$pmcTFUser.'" /></label></p>';
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_rows">' . __('Friends per Row:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_rows" name="pmc_TF_rows" type="text" value="'.$pmcTFRows.'" /></label></p>';
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_limit">' . __('Display Limit (0 for Display all):', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_limit" name="pmc_TF_limit" type="text" value="'.$pmcTFLimit.'" /></label></p>';
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_cache">' . __('Cache Update Interval: (in seconds)', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_cache" name="pmc_TF_cache" type="text" value="'.$pmcCacheUpdate.'" /></label></p>';
+		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_show_rss">' . __('Show RSS Link?', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_bgcolor" name="pmc_TF_show_rss" type="checkbox"'.$pmcShowRSS.' /></label></p>';
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_bgcolor">' . __('Background Colour:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_bgcolor" name="pmc_TF_bgcolor" type="text" value="'.$pmcBGcolor.'" /></label></p>';
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_fgcolor">' . __('Text Colour:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_fgcolor" name="pmc_TF_fgcolor" type="text" value="'.$pmcFGcolor.'" /></label></p>';
 		echo '<input type="hidden" id="pmc_friends_widget_submit" name="pmc_friends_widget_submit" value="1" />';
 		
 	} //close pmcFriends_control()
+	
+	//function to write drop down list in control panel and automatically select currently stored value
+	function pmcWriteSelect($pmcCurrOpt) {
+		//start building the select tag
+		$pmcSelect = '<select style="display: block; width: 300px; text-align: left;" id="pmc_TF_title_link" name="pmc_TF_title_link">';
 		
+		//build the rest of the select tag based on current setting
+		switch ($pmcCurrOpt) {
+			case 'none':
+				$pmcSelect .= '<option value="none" selected="selected">None</option><option value="page">My Twitter Page</option><option value="rss">My Twitter RSS</option>';
+				break;
+			case 'page':
+				$pmcSelect .= '<option value="none">None</option><option value="page" selected="selected">My Twitter Page</option><option value="rss">My Twitter RSS</option>';
+				break;
+			case 'rss':
+				$pmcSelect .=  '<option value="none">None</option><option value="page">My Twitter Page</option><option value="rss"  selected="selected">My Twitter RSS</option>';
+				break;
+			default:
+				$pmcSelect .= '<option value="none">None</option><option value="page">My Twitter Page</option><option value="rss">My Twitter RSS</option>';
+		}
+		
+		//close the select tag
+		$pmcSelect .= '</select>';
+		
+		//return the completed tag
+		return $pmcSelect;
+			
+	} //close pmcWriteSelect	
+	
 	//register widget and widget control
 	register_sidebar_widget('Twitter Friends', 'pmcDisplayFriends');
 	register_widget_control('Twitter Friends', 'pmcFriends_control', 300, 300);

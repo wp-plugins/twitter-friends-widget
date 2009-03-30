@@ -14,9 +14,12 @@ Twitter Friends is a WordPress plugin that displays your Twitter friends in your
 The widget allows you to specify the following:
 
 1. Widget Title - default is "My Twitter Followers".
+1. Title Link - Whether the Widget Title should link to your Twitter Home Page, Twitter RSS or none, (default).
 1. Your Twitter Name - required.
 1. Friends per Row - how many friends you want displayed in each row. Default is 5. 
 1. Display Limit - how many friends you want to display. By default this is set to 20. Friends are listed in the order of the most recently added to your Twitter profile. Set this to 0 to display all.
+1. Cache Update Interval - how long between updates to the cache. Specified in seconds. Default is 3600 or one hour.
+1. Show RSS Link - chose whether to show a link to your Twitter RSS feed or not.
 1. Background Colour - the background colour of the table holding the Twitter Profile Images. Default is white (#FFFFFF). Use Hex values or the standard HTML named colours.
 1. Text Colour - as the background colour above, but affects the text displayed. Default is black (#000000). Once again Hex or named colours can be used.
 
@@ -48,19 +51,23 @@ At the moment, no. I may add an option to disable caching, but I don't see any r
 The default setting is 3600 seconds, (one hour), but this can be changed in the widget options. I would reccomend that you don't set this to 0 if you have a lot of Twitter friends, as the page load time will increase drastically.
 
 = Why doesn't my page update exactly after x seconds? =
-The plugin will only update when the page is loaded. So if you set the update interval to 3600 seonds, it will update the cache the next time the page is loaded after that hour has passed.
+The plugin will only check if it needs to be updated when the page displaying the plugin is loaded. So if you set the update interval to 3600 seonds, it will update the cache the next time the page is loaded after that hour has passed.
 
 = The RSS icon does not appear beside the subscribe link =
 The path to the RSS icon is hard-coded as follows:
 
 [your WordPress URL]/wp-contents/plugins/twitter-friends-widget/rss.png
 
-If you have modified your WordPress install so that your plugins are not stored in the default plugins directory, then the icon will not be found. Edit line 250 of twitter-friends-widget.php to reflect your current plugins directory and it should work again.
+If you have modified your WordPress install so that your plugins are not stored in the default plugins directory, then the icon will not be found. Edit lines 245 and 273 of twitter-friends-widget.php to reflect your current plugins directory and it should work again.
 
 == Feedback ==
-Feedback and requests for new features are welcome. Just leave a comment on the plugin homepage. (http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget)
+Feedback and requests for new features are welcome. Just leave a comment on the plugin homepage. (http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget) or via Twitter to @whatithink
 
 == Changelog ==
+
+= Version 2.3 =
+* Added option to enable/ disable "Subscribe to My Twitter Feed" link.
+* Added option to add link to Widget Title
 
 = Version 2.2 =
 * Fixed a bug where ther limit specified in the widget settings was not being applied.
@@ -99,6 +106,10 @@ Fixed bug with local caching
 * Changed from using "normal" size images to "mini" size profile images
 * Added styles to header
 
-== To Do ==
-* Add option to specify large or mini styles
-* Add check to ensure that user name is entered.
+== Coming Soon ==
+* Option to specify mini, normal or bigger profile images.
+* Shortcode to allow display of Twitter Friends from within posts/ pages.
+* Options page for advanced settings.
+* Uninstall option
+* Option to remove friends
+
