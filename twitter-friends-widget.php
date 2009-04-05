@@ -3,7 +3,7 @@
 Plugin Name: Twitter Friends Widget
 Plugin URI: http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget/
 Description: Widget to display your Twitter Friends in the sidebar
-Version: 2.3
+Version: 2.4
 Author: Paul McCarthy
 Author URI: http://www.paulmc.org/whatithink
 */
@@ -367,10 +367,11 @@ function widget_pmcFriends_init() {
 		$pmcStyles = get_option('widget_pmcFriends');
 		$pmcBGcolor = $pmcStyles['pmc_TF_bgcolor'];
 		$pmcFGcolor = $pmcStyles['pmc_TF_fgcolor'];
+		$pmcTFTable = $pmcStyles['pmc_TF_table'];
 		
 		echo '<!-- CSS style for Twitter Friends widget -->' . "\n";
-		echo '<style type="text/css">' . "\n";
-		echo 'table.pmcTFTable {' . "\n" . 'width: 120px; padding: 0; margin: 20px 0; border: 0; border-collapse: collapse; border-spacing: 0; background-color: ' . $pmcBGcolor . ' !important; color: ' . $pmcFGcolor . ' !important;' . "\n" . '}' . "\n";
+		echo '<style type="text/css">' . "\n";	
+		echo 'table.pmcTFTable {' . "\n". $pmcTFTable . "\n" . '}' . "\n";
 		echo 'tr.pmcTFTR {' . "\n" . 'margin: 0; padding: 0; border-collapse: collapse;' . "\n" . '}' . "\n";
 		echo 'td.pmcTFTD {' . "\n" . 'max-width: 24px; max-height: 24px; border: 0; padding: 0; margin: 0; border-collapse: collapse; overflow: hidden; background-color: ' . $pmcBGcolor . '!important; color: ' . $pmcFGcolor . '!important;' . "\n" . '}' . "\n";
 		echo 'img.pmcTFimg {' . "\n" . 'border: 0; padding: 0; margin: 0; height: 24px; width: 24px;' . "\n" . '}' . "\n";
@@ -394,7 +395,7 @@ function widget_pmcFriends_init() {
 			$newoptions['pmc_TF_cache'] = strip_tags(stripslashes($_POST['pmc_TF_cache']));
 			$newoptions['pmc_TF_show_rss'] = strip_tags(stripslashes($_POST['pmc_TF_show_rss']));
 			$newoptions['pmc_TF_title_link'] = strip_tags(stripslashes($_POST['pmc_TF_title_link']));
-			
+			$newoptions['pmc_TF_table'] = strip_tags(stripslashes($_POST['pmc_TF_table']));
 		} //close if
 		
 		//check if there has been an update
@@ -418,6 +419,7 @@ function widget_pmcFriends_init() {
 		if (!$options['pmc_TF_fgcolor']) $options['pmc_TF_fgcolor'] = "#000000";
 		if (!$options['pmc_TF_cache']) $options['pmc_TF_cache'] = 3600;
 		if (!$options['pmc_TF_title_link']) $options['pmc_TF_title_link'] = 'none';
+		if (!$options['pmc_TF_table']) $options['pmc_TF_table'] = "width: 120px; padding: 0; margin: 20px 0; border: 0; border-collapse: collapse; border-spacing: 0;";
 
 		
 		//get the options already saved in the database, encoding any HTML
@@ -431,6 +433,7 @@ function widget_pmcFriends_init() {
 		$pmcShowRSS = htmlspecialchars($options['pmc_TF_show_rss'], ENT_QUOTES);
 		$pmcUpdateUser = htmlspecialchars($options['pmc_TF_update_user'], ENT_QUOTES);
 		$pmcTFTitleLink = htmlspecialchars($options['pmc_TF_title_link'], ENT_QUOTES);
+		$pmcTFTable = htmlspecialchars($options['pmc_TF_table'], ENT_QUOTES);
 		
 		//code to automatically enable checkbox if user has enabled setting
 		if ($pmcShowRSS) {
@@ -451,6 +454,7 @@ function widget_pmcFriends_init() {
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_show_rss">' . __('Show RSS Link?', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_bgcolor" name="pmc_TF_show_rss" type="checkbox"'.$pmcShowRSS.' /></label></p>';
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_bgcolor">' . __('Background Colour:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_bgcolor" name="pmc_TF_bgcolor" type="text" value="'.$pmcBGcolor.'" /></label></p>';
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_fgcolor">' . __('Text Colour:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_fgcolor" name="pmc_TF_fgcolor" type="text" value="'.$pmcFGcolor.'" /></label></p>';
+		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_table">' . __('Table Style:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_table" name="pmc_TF_table" type="text" value="'.$pmcTFTable.'" /></label></p>';
 		echo '<input type="hidden" id="pmc_friends_widget_submit" name="pmc_friends_widget_submit" value="1" />';
 		
 	} //close pmcFriends_control()

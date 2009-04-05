@@ -22,6 +22,7 @@ The widget allows you to specify the following:
 1. Show RSS Link - chose whether to show a link to your Twitter RSS feed or not.
 1. Background Colour - the background colour of the table holding the Twitter Profile Images. Default is white (#FFFFFF). Use Hex values or the standard HTML named colours.
 1. Text Colour - as the background colour above, but affects the text displayed. Default is black (#000000). Once again Hex or named colours can be used.
+1. Table Style - set the CSS to style the table used to display the friends list.
 
 == Installation ==
 
@@ -33,16 +34,16 @@ The widget allows you to specify the following:
 == Frequently Asked Questions ==
 
 = The profile images are not being displayed =
-Twitter stores profile images using Amazon's S3 online storage. The plugin hotlinks to the images on the Amazon. If the images are not being retrieved, then there might be an issue with your ISP's access to the Amazon cloud. Give it a minute and try again.
+Twitter stores profile images using Amazon's S3 online storage. The plugin hotlinks to the images on the Amazon. If the Twitter User changes their profile image it may take some time for the cache to update with the latest profile image.
 
 = I have a million followers on Twitter and it takes for ever for my sidebar to load. =
 Of course it will. That's why there's an option within the plugin to limit the number of friends that are displayed. Use it.
 
 = The table that displays the users doesn't blend in with my blog theme, how do I change it? =
-In the Widget settings panel, you can specify a background colour and a text colour. Use either hex values (e.g. #FFFFFF is white, or the standard HTML colours: red, green, blue etc.)
+In the Widget settings panel, you can specify background colour, text colour and CSS style for the containing table. Use either hex values (e.g. #FFFFFF is white), or the standard HTML colours, (red, green, blue etc.).
 
 = How do I enable caching? =
-Caching is now enable by default. The plugin creates a table in the WordPress database to store the screen names and profile image url's of your friends. The cache is updated on a hourly basis by WP-Cron.
+Caching is now enable by default. The plugin creates a table in the WordPress database to store the screen names and profile image url's of your friends. The cache is updated automatically, dependent on the time specified in the widget options.
 
 = Can I disable caching? =
 At the moment, no. I may add an option to disable caching, but I don't see any reason to. Getting the friends list from Twitter each time the page is loaded is slow, and if for any reason Twitter is down, your friends list won't be displayed. By using the cache, the plugin will have something to display. It might not reflect the latest followers you've added, but it will show something.
@@ -64,6 +65,9 @@ If you have modified your WordPress install so that your plugins are not stored 
 Feedback and requests for new features are welcome. Just leave a comment on the plugin homepage. (http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget) or via Twitter to @whatithink
 
 == Changelog ==
+
+= Version 2.4 =
+* Added option to change table style.
 
 = Version 2.3 =
 * Added option to enable/ disable "Subscribe to My Twitter Feed" link.
@@ -112,4 +116,4 @@ Fixed bug with local caching
 * Options page for advanced settings.
 * Uninstall option
 * Option to remove friends
-
+* Option to manually update
