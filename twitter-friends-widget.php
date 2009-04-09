@@ -2,8 +2,8 @@
 /*
 Plugin Name: Twitter Friends Widget
 Plugin URI: http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget/
-Description: Widget to display your Twitter Friends in the sidebar
-Version: 2.4
+Description: Widget to display your Twitter Friends in the sidebar.
+Version: 2.5
 Author: Paul McCarthy
 Author URI: http://www.paulmc.org/whatithink
 */
@@ -32,6 +32,7 @@ function widget_pmcFriends_init() {
 	if (!function_exists('register_sidebar_widget')) {
 		return;
 	} //close if
+	
 	
 	//function to get Twitter Friends using Twitter API
 	function pmcGetFriends() {
@@ -256,10 +257,11 @@ function widget_pmcFriends_init() {
 		$pmcHTML = '<table class="pmcTFTable"><tr class="pmcTFTR">';
 		
 		//iterate through the arrays and build the HTML table
-		for ($i=1; $i<$pmcTFLimit; $i++) {
-			$pmcHTML .= '<td class="pmcTFTD"><a href="http://twitter.com/' . $pmcResults[$i][0] . '" title="' . $pmcResults[$i][0] . '"><img class="pmcTFimg" src="' . $pmcResults[$i][1] . '" alt="' . $pmcResults[$i][0] . '" /></a></td>' . "\n";
+		for ($i=1; $i<=$pmcTFLimit; $i++) {
+			$j = $i-1;
+			$pmcHTML .= '<td class="pmcTFTD"><a href="http://twitter.com/' . $pmcResults[$j][0] . '" title="' . $pmcResults[$j][0] . '"><img class="pmcTFimg" src="' . $pmcResults[$j][1] . '" alt="' . $pmcResults[$j][0] . '" /></a></td>' . "\n";
 			//check if we have reached the end of a row
-			if ($i % $pmcTFRows == 0) {
+			if ($i % $pmcTFRows == 0 ) {
 				$pmcHTML .= '</tr><tr class="pmcTFTR">' . "\n";
 			} //close if
 		} //close for
@@ -269,9 +271,9 @@ function widget_pmcFriends_init() {
 		
 		//check if the user wants to display the RSS link and add the link to the rss feed
 		if ($pmcTFShowRSS) {
-			$pmcHTML .= '<p><a href="https://twitter.com/statuses/user_timeline/' . pmcRetrieveTwitterID() . '.rss" title="Subscribe to my Twitter Feed">';
+			$pmcHTML .= '<p><a href="https://twitter.com/statuses/user_timeline/' . pmcRetrieveTwitterID($pmcTFUser) . '.rss" title="Subscribe to my Twitter Feed">';
 			$pmcHTML .= '<img style="margin: 0 10px 0 0; border: 0; text-decoration: none;" src="' . get_bloginfo('wpurl') . '/wp-content/plugins/twitter-friends-widget/rss.png" title="Subscribe to my Twitter RSS" alt="RSS: " /></a>';
-			$pmcHTML .= '<a href="https://twitter.com/statuses/user_timeline/' . pmcRetrieveTwitterID() . '.rss" title="Subscribe to my Twitter Feed">';
+			$pmcHTML .= '<a href="https://twitter.com/statuses/user_timeline/' . pmcRetrieveTwitterID($pmcTFUser) . '.rss" title="Subscribe to my Twitter Feed">';
 			$pmcHTML .= 'Subscribe to my Twitter RSS</a></p>';
 		}
 		
@@ -316,14 +318,14 @@ function widget_pmcFriends_init() {
 	} //close pmcCheckTime
 	
 	//function to get the users twitter id from their username
-	function pmcRetrieveTwitterID() {
+	function pmcRetrieveTwitterID($pmcCurrUser) {
 		//check if we have stored the ID already
 		//get the Twitter username from database
 		$pmcTwitterOptions = get_option('widget_pmcFriends');
 		$pmcTwitterUser = $pmcTwitterOptions['pmc_TF_user'];
 		$pmcTwitterID = get_option('pmc_TF_ID');
 		
-		if (!$pmcTwitterID) {
+		if ($pmcCurrUser != $pmcTwitterUser) {
 
 			//require class_http.php
 			require_once(dirname(__FILE__).'/class_http.php');
