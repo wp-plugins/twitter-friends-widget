@@ -75,6 +75,9 @@ Feedback and requests for new features are welcome. Just leave a comment on the 
 
 == Changelog ==
 
+= Version 2.51 =
+* Bug Fix: Fatal Error triggered if Advanced Settings loaded before widget.
+
 = Version 2.5 =
 * Added "Twitter Friends Widget - Advanced Settings" plugin.
 * Added Delete Friends option.

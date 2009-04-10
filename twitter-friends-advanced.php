@@ -3,7 +3,7 @@
 Plugin Name: Twitter Friends Widget - Advanced Settings
 Plugin URI: http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget/
 Description: Advanced edit, update and uninstall options for Twitter Friends Widget
-Version: 2.5
+Version: 2.51
 Author: Paul McCarthy
 Author URI: http://www.paulmc.org/whatithink
 */
@@ -26,7 +26,7 @@ Author URI: http://www.paulmc.org/whatithink
 */
 
 //in order to work, we require the widget functions
-require("twitter-friends-widget.php");
+require_once("twitter-friends-widget.php");
 
 //function called when the plugin is loaded
 function pmcTFAdvanced_init() {
@@ -215,7 +215,7 @@ function pmcTFUninstall() {
 } //close pmcTFUninstall
 	
 //function to display table of Twitter Friends in the Advanced Settings page.
-function pmcDisplayFriendsTable($pmcStart, $pmcEnd) {
+function pmcDisplayFriendsTable() {
 	//we'll be using the WordPress database
 	global $wpdb;
 		
