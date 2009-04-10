@@ -75,8 +75,8 @@ Feedback and requests for new features are welcome. Just leave a comment on the 
 
 == Changelog ==
 
-= Version 2.51 =
-* Bug Fix: Fatal Error triggered if Advanced Settings loaded before widget.
+= Version 2.5.1 =
+* Incorporated patch from David Jack Wange Olrik to rename class_http.php and generic http() class to avoid naming conflicts.
 
 = Version 2.5 =
 * Added "Twitter Friends Widget - Advanced Settings" plugin.

@@ -3,7 +3,7 @@
 Plugin Name: Twitter Friends Widget - Advanced Settings
 Plugin URI: http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget/
 Description: Advanced edit, update and uninstall options for Twitter Friends Widget
-Version: 2.51
+Version: 2.5.1
 Author: Paul McCarthy
 Author URI: http://www.paulmc.org/whatithink
 */

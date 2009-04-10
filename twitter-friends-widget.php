@@ -3,7 +3,7 @@
 Plugin Name: Twitter Friends Widget
 Plugin URI: http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget/
 Description: Widget to display your Twitter Friends in the sidebar.
-Version: 2.5
+Version: 2.5.1
 Author: Paul McCarthy
 Author URI: http://www.paulmc.org/whatithink
 */
@@ -58,10 +58,10 @@ function widget_pmcFriends_init() {
 		
 		//use class_http to retrieve the friends list
 		//list is in XML format - see Twitter API for more details
-		require_once(dirname(__FILE__).'/class_http.php');
+		require_once(dirname(__FILE__).'/pmc_class_http.php');
 		
 		//create the connection
-		$pmcTFconn = new http();
+		$pmcTFconn = new pmc_http();
 		
 		//fetch the url
 		if (!$pmcTFconn->fetch($pmcURL, "0", "friends")) {
@@ -225,9 +225,6 @@ function widget_pmcFriends_init() {
 		//if the limit is set to 0, show all
 		if ($pmcTFLimit == 0) {
 			$pmcTFLimit = $pmcResultsLen;
-		} else {
-			//because the array starts from 1
-			$pmcTFLimit = $pmcTFLimit + 1;
 		}
 		
 		//start building the widget output
@@ -328,10 +325,10 @@ function widget_pmcFriends_init() {
 		if ($pmcCurrUser != $pmcTwitterUser) {
 
 			//require class_http.php
-			require_once(dirname(__FILE__).'/class_http.php');
+			require_once(dirname(__FILE__).'/pmc_class_http.php');
 	
 			//create a new connection
-			$pmcTwitterConn = new http();
+			$pmcTwitterConn = new pmc_http();
 	
 			//set the url to the Twitter API
 			$pmcTwitterAPI = 'http://twitter.com/users/show/' . $pmcTwitterUser . '.xml';

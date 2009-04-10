@@ -1,6 +1,6 @@
 <?php
 /*
-* Filename.......: class_http.php
+* Filename.......: pmc_class_http.php
 * Author.........: Troy Wolf [troy@troywolf.com]
 * Last Modified..: Date: 2006/03/06 10:15:00
 * Description....: Screen-scraping class with caching. Includes image_cache.php
@@ -10,7 +10,7 @@
                    WebDAV requests to Microsoft Exchange Server.
 */
 
-class http {
+class pmc_http {
     var $log;
     var $dir;
     var $name;
@@ -31,8 +31,8 @@ class http {
     /*
     The class constructor. Configure defaults.
     */ 
-    function http() {
-        $this->log = "New http() object instantiated.<br />\n";
+    function pmc_http() {
+        $this->log = "New pmc_http() object instantiated.<br />\n";
         
         /*
         Seconds to attempt socket connection before giving up.
