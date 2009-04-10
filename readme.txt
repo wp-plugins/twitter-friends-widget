@@ -1,5 +1,5 @@
 === Twitter Friends Widget ===
-Contributors: paulmac
+Contributors: paulmac, dremation
 Tags: Twitter, widget, friends, following
 Requires at least: 2.5
 Tested up to: 2.7.1
