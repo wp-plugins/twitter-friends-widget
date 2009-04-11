@@ -16,9 +16,8 @@ Twitter Friends is a WordPress plugin that displays your Twitter friends/ follow
 1. Extract "twitter-friends-widget.zip".
 1. Upload the "twitter-friends-widget" folder to your WordPress plugins directory.
 1. Activate the "Twitter Friends Widget" from the WordPress plugins Admin Panel.
-1. If required, activate the "Twitter Friends Widget - Advanced Settings" plugin from the WordPress plugins Admin Panel.
 1. Update the options, from the Widgets Panel under the Appearance/ Design Panel. (Depends on your version of WordPress.)
-1. Access the "Twitter Friends Widget - Advanced Settings" from the Main Menu.
+1. Access the "Twitter Friends Widget - Advanced Settings" from the Main Administration Menu.
 
 == Frequently Asked Questions ==
 
