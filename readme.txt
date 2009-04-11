@@ -9,27 +9,7 @@ Displays your Twitter friends with their profile images in the sidebar.
 
 == Description ==
 
-Twitter Friends is a WordPress plugin that displays your Twitter friends in your sidebar in the same way that they appear on your Twitter homepage.
-
-The widget allows you to specify the following:
-
-1. Widget Title - default is "My Twitter Followers".
-1. Title Link - Whether the Widget Title should link to your Twitter Home Page, Twitter RSS or none, (default).
-1. Your Twitter Name - required.
-1. Friends per Row - how many friends you want displayed in each row. Default is 5. 
-1. Display Limit - how many friends you want to display. By default this is set to 20. Friends are listed in the order of the most recently added to your Twitter profile. Set this to 0 to display all.
-1. Cache Update Interval - how long between updates to the cache. Specified in seconds. Default is 3600 or one hour.
-1. Show RSS Link - chose whether to show a link to your Twitter RSS feed or not.
-1. Background Colour - the background colour of the table holding the Twitter Profile Images. Default is white (#FFFFFF). Use Hex values or the standard HTML named colours.
-1. Text Colour - as the background colour above, but affects the text displayed. Default is black (#000000). Once again Hex or named colours can be used.
-1. Table Style - set the CSS to style the table used to display the friends list.
-
-The Advanced Settings Plugin allows you to perform the following actions:
-
-1. Delete Friends -Delete Twitter friends from the cache. This does not delete the friend from your Twitter Profile. Useful if you want to refresh the profile image or screen name of a small number of Twitter Friends.
-1. Manual Update - Performs a manual update of your Twitter Friends list. Useful if you have added a number of Twitter Friends and don't want to wait for the cache to update automatically.
-1. Change Twitter User - Use this option if you have changed your Twitter Username. Automatically updates the widget with details of your new username and rebuilds your Twitter Friends list.
-1. Uninstall - Removes all database settings and deletes the cache. Deactivate the Twitter Friends Widget before performing the uninstallation. Useful if you are experiencing problems with the widget.
+Twitter Friends is a WordPress plugin that displays your Twitter friends/ followers in your sidebar in the same way that they appear on your Twitter homepage.
 
 == Installation ==
 
@@ -70,10 +50,42 @@ The path to the RSS icon is hard-coded as follows:
 
 If you have modified your WordPress install so that your plugins are not stored in the default plugins directory, then the icon will not be found. Edit lines 245 and 273 of twitter-friends-widget.php to reflect your current plugins directory and it should work again.
 
+== Settings ==
+
+The widget allows you to specify the following:
+
+1. Widget Title - default is "My Twitter Friends".
+1. Title Link - Whether the Widget Title should link to your Twitter Home Page, Twitter RSS or none, (default).
+1. Your Twitter Name - required.
+1. Your Twitter Password - required if you want to display your Twitter Followers instead of Twitter Friends.
+1. Display Friends or Followers - Choose whether you want the widget to display your Twitter Friends (people you follow), or Twitter Followers (people who follow you). If this setting is changed after the initial setup, manually delete your friends and then perform a manual update - see Advanced Settings.
+1. Friends per Row - how many friends you want displayed in each row. Default is 5. 
+1. Display Limit - how many friends you want to display. By default this is set to 20. Friends are listed in the order of the most recently added to your Twitter profile. Set this to 0 to display all.
+1. Cache Update Interval - how long between updates to the cache. Specified in seconds. Default is 3600 or one hour.
+1. Show RSS Link - chose whether to show a link to your Twitter RSS feed or not.
+1. Background Colour - the background colour of the table holding the Twitter Profile Images. Default is white (#FFFFFF). Use Hex values or the standard HTML named colours.
+1. Text Colour - as the background colour above, but affects the text displayed. Default is black (#000000). Once again Hex or named colours can be used.
+1. Table Style - set the CSS to style the table used to display the friends list.
+
+The Advanced Settings Plugin allows you to perform the following actions:
+
+1. Delete Friends -Delete Twitter friends from the cache. This does not delete the friend from your Twitter Profile. Useful if you want to refresh the profile image or screen name of a small number of Twitter Friends.
+1. Manual Update - Performs a manual update of your Twitter Friends list. Useful if you have added a number of Twitter Friends and don't want to wait for the cache to update automatically.
+1. Change Twitter User - Use this option if you have changed your Twitter Username. Automatically updates the widget with details of your new username and rebuilds your Twitter Friends list.
+1. Uninstall - Removes all database settings and deletes the cache. Deactivate the Twitter Friends Widget before performing the uninstallation. Useful if you are experiencing problems with the widget.
+
 == Feedback ==
 Feedback and requests for new features are welcome. Just leave a comment on the plugin homepage. (http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget) or via Twitter to @whatithink
 
 == Changelog ==
+
+= Version 2.6 =
+* Added option to specify whether Friends or Followers are displayed.
+* Updated code to use curl instead of pmc_http_class to connect to Twitter.
+* Added "Delete All" option in Advanced Settings.
+* Bug Fix: Error in code used to display RSS link in Widget Title.
+* Bug Fix: Display limit not being displayed correctly in Widget Control Panel.
+* Bug Fix: Twitter ID not updated correctly.
 
 = Version 2.5.1 =
 * Incorporated patch from David Jack Wange Olrik to rename class_http.php and generic http() class to avoid naming conflicts.
@@ -134,5 +146,4 @@ Fixed bug with local caching
 == Coming Soon ==
 * Option to specify mini, normal or bigger profile images.
 * Shortcode to allow display of Twitter Friends from within posts/ pages.
-* Option to use Twitter API to block users when deleted from cache.
 * Local caching of profile images.

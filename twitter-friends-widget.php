@@ -3,7 +3,7 @@
 Plugin Name: Twitter Friends Widget
 Plugin URI: http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget/
 Description: Widget to display your Twitter Friends in the sidebar.
-Version: 2.5.2
+Version: 2.6
 Author: Paul McCarthy
 Author URI: http://www.paulmc.org/whatithink
 */
@@ -50,33 +50,45 @@ function widget_pmcFriends_init() {
 		//get the widget settings
 		$pmcOptions = get_option('widget_pmcFriends');
 		
-		//store username
+		//store settings
 		$pmcUser = $pmcOptions['pmc_TF_user'];
+		$pmcPass = $pmcOptions['pmc_TF_password'];
+		$pmcDisplay = $pmcOptions['pmc_TF_type'];
 		
-		//create the url for the Twitter API
-		$pmcURL = 'http://twitter.com/statuses/friends/' . $pmcUser . '.xml';
+		//we'll use curl to get the list
+		$pmcCurl = curl_init();
 		
-		//use class_http to retrieve the friends list
-		//list is in XML format - see Twitter API for more details
-		require_once(dirname(__FILE__).'/pmc_class_http.php');
+		//check if the user wants to display friends or followers
+		//friends is the default
+		if ($pmcDisplay == 'followers') {
+			//Twitter API to return followers - requires authentication
+			$pmcURL = 'http://twitter.com/statuses/followers.xml';
+			
+			//set the appropriate curl options
+			curl_setopt($pmcCurl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+			curl_setopt($pmcCurl, CURLOPT_USERPWD, "$pmcUser:$pmcPass");
+			
+		} else {
+			//Twitter API to return friends - does not require authentication
+			$pmcURL = 'http://twitter.com/statuses/friends/' . $pmcUser . '.xml';
+			
+		}
 		
-		//create the connection
-		$pmcTFconn = new pmc_http();
+		//set basic curl options
+		curl_setopt($pmcCurl, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($pmcCurl, CURLOPT_BINARYTRANSFER, 1);
+		curl_setopt($pmcCurl, CURLOPT_URL, $pmcURL);
+		curl_setopt($pmcCurl, CURLOPT_CONNECTTIMEOUT, 2);
+
+		//get the list from Twitter
+		$pmcTFlist = curl_exec($pmcCurl);
 		
-		//fetch the url
-		if (!$pmcTFconn->fetch($pmcURL, "0", "friends")) {
-			echo '<h3>Error</h3>';
-			echo '<p>There was an error retrieving your friends list</p>';
-			echo $pmcTFconn->log;
-			exit();
-		} //close if
-		
-		//store the friends list
-		$pmcTFlist = $pmcTFconn->body;
+		//close curl connection
+		curl_close($pmcCurl);
 		
 		//search for the screen_name
 		preg_match_all('/<screen_name>(.*)<\/screen_name>/', $pmcTFlist, $pmcScreen);
-		
+
 		//search for the profile_image_url
 		preg_match_all('/<profile_image_url>(.*)<\/profile_image_url>/', $pmcTFlist, $pmcImage);
 		
@@ -179,6 +191,7 @@ function widget_pmcFriends_init() {
 		if ($pmcUpdateReqd) {
 			//if an update is required, call the function to update the db
 			pmcGetFriends();
+			pmcRetrieveTwitterID();
 		}
 		//extract the Widget display settings
 		extract($pmcArgs);
@@ -194,9 +207,10 @@ function widget_pmcFriends_init() {
 		$pmcTitle = $pmcOptions['pmc_TF_title'];
 		$pmcTFUser = $pmcOptions['pmc_TF_user'];
 		$pmcTFRows = (int) $pmcOptions['pmc_TF_rows'];
-		$pmcTFLimit = (int) $pmcOptions['pmc_TF_limit'];
+		$pmcTFLimit = $pmcOptions['pmc_TF_limit'];
 		$pmcTFShowRSS = $pmcOptions['pmc_TF_show_rss'];
 		$pmcTFTitleLink = $pmcOptions['pmc_TF_title_link'];
+		$pmcTFID = get_option('pmc_TF_ID');
 		
 		//check that the user has set a value for the rows to be used
 		if ($pmcTFRows == 0) {
@@ -239,7 +253,7 @@ function widget_pmcFriends_init() {
 				echo '<a href="http://twitter.com/' . $pmcTFUser . '" title="My Twitter Home Timeline">' . $pmcTitle . '</a>';
 				break;
 			case 'rss':
-				echo '<a href="https://twitter.com/statuses/user_timeline/' . pmcRetrieveTwitterID() . '.rss" title="Subscribe to my Twitter Feed">';
+				echo '<a href="https://twitter.com/statuses/user_timeline/' . $pmcTFID . '.rss" title="Subscribe to my Twitter Feed">';
 				echo '<img style="margin: 0 10px 0 0; border: 0; text-decoration: none;" src="' . get_bloginfo('wpurl') . '/wp-content/plugins/twitter-friends-widget/rss.png" title="Subscribe to my Twitter RSS" alt="RSS: " />' . $pmcTitle . '</a>';
 				break;
 			default:
@@ -268,9 +282,9 @@ function widget_pmcFriends_init() {
 		
 		//check if the user wants to display the RSS link and add the link to the rss feed
 		if ($pmcTFShowRSS) {
-			$pmcHTML .= '<p><a href="https://twitter.com/statuses/user_timeline/' . pmcRetrieveTwitterID($pmcTFUser) . '.rss" title="Subscribe to my Twitter Feed">';
+			$pmcHTML .= '<p><a href="https://twitter.com/statuses/user_timeline/' . $pmcTFID . '.rss" title="Subscribe to my Twitter Feed">';
 			$pmcHTML .= '<img style="margin: 0 10px 0 0; border: 0; text-decoration: none;" src="' . get_bloginfo('wpurl') . '/wp-content/plugins/twitter-friends-widget/rss.png" title="Subscribe to my Twitter RSS" alt="RSS: " /></a>';
-			$pmcHTML .= '<a href="https://twitter.com/statuses/user_timeline/' . pmcRetrieveTwitterID($pmcTFUser) . '.rss" title="Subscribe to my Twitter Feed">';
+			$pmcHTML .= '<a href="https://twitter.com/statuses/user_timeline/' . $pmcTFID . '.rss" title="Subscribe to my Twitter Feed">';
 			$pmcHTML .= 'Subscribe to my Twitter RSS</a></p>';
 		}
 		
@@ -315,49 +329,37 @@ function widget_pmcFriends_init() {
 	} //close pmcCheckTime
 	
 	//function to get the users twitter id from their username
-	function pmcRetrieveTwitterID($pmcCurrUser) {
-		//check if we have stored the ID already
+	function pmcRetrieveTwitterID() {
 		//get the Twitter username from database
 		$pmcTwitterOptions = get_option('widget_pmcFriends');
 		$pmcTwitterUser = $pmcTwitterOptions['pmc_TF_user'];
-		$pmcTwitterID = get_option('pmc_TF_ID');
-		
-		if ($pmcCurrUser != $pmcTwitterUser) {
 
-			//require class_http.php
-			require_once(dirname(__FILE__).'/pmc_class_http.php');
+		//use curl to make connection
+		$pmcCurl = curl_init();
 	
-			//create a new connection
-			$pmcTwitterConn = new pmc_http();
-	
-			//set the url to the Twitter API
-			$pmcTwitterAPI = 'http://twitter.com/users/show/' . $pmcTwitterUser . '.xml';
-	
-			//make sure that we can connect, if not display an error message
-			if (!$pmcTwitterConn->fetch($pmcTwitterAPI, "0", "twitter")) {
-				echo "<h2>There is a problem with the http request!</h2>";
-  				echo $pmcTwitterConn->log;
-		  		exit();
-			} //close if
-	
-			//if we have connected, then get the data.
-			//as this is xml data, we are lookig for the ID key and it's value.
-			$pmcTwitterData=$pmcTwitterConn->body;
-			preg_match ('/<id>(.*)<\/id>/', $pmcTwitterData, $matches);	
-	
-			//remove the <id></id> HTML tags from the returned key
-			$pmcTrimID = strip_tags($matches[0]);
+		//set the url to the Twitter API
+		$pmcTwitterAPI = 'http://twitter.com/users/show/' . $pmcTwitterUser . '.xml';
 			
-			//add the setting to the database
-			add_option('pmc_TF_ID', $pmcTrimID);
-		
-			//set the return variable
-			$pmcTwitterID = $pmcTrimID;
-		} //close if
+		//set curl options
+		curl_setopt($pmcCurl, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($pmcCurl, CURLOPT_URL, $pmcTwitterAPI);
+		curl_setopt($pmcCurl, CURLOPT_CONNECTTIMEOUT, 2);
+
+		//connect with curl
+		$pmcTwitterData = curl_exec($pmcCurl);
+			
+		//close the connection
+		curl_close($pmcCurl);
+			
+		//get the twitter id
+		preg_match ('/<id>(.*)<\/id>/', $pmcTwitterData, $matches);	
 	
-		//return the Twitter ID
-		return $pmcTwitterID;
-		
+		//remove the <id></id> HTML tags from the returned key
+		$pmcTrimID = strip_tags($matches[0]);
+			
+		//update the setting to the database
+		update_option('pmc_TF_ID', $pmcTrimID);
+				
 	}//close pmcRetrieveTwitterID
 	
 	//function to write the style info to the header
@@ -384,7 +386,7 @@ function widget_pmcFriends_init() {
 		
 		//check if the settings have been saved
 		if ($_POST['pmc_friends_widget_submit']) {
-			//remove anything that sholdn't be there
+			//remove anything that shouldn't be there
 			$newoptions['pmc_TF_title'] = strip_tags(stripslashes($_POST['pmc_TF_title']));
 			$newoptions['pmc_TF_user'] = strip_tags(stripslashes($_POST['pmc_TF_user']));
 			$newoptions['pmc_TF_rows'] = strip_tags(stripslashes($_POST['pmc_TF_rows']));
@@ -395,30 +397,36 @@ function widget_pmcFriends_init() {
 			$newoptions['pmc_TF_show_rss'] = strip_tags(stripslashes($_POST['pmc_TF_show_rss']));
 			$newoptions['pmc_TF_title_link'] = strip_tags(stripslashes($_POST['pmc_TF_title_link']));
 			$newoptions['pmc_TF_table'] = strip_tags(stripslashes($_POST['pmc_TF_table']));
+			$newoptions['pmc_TF_type'] = strip_tags(stripslashes($_POST['pmc_TF_type']));
+			$newoptions['pmc_TF_password'] = strip_tags(stripslashes($_POST['pmc_TF_password']));
 		} //close if
 		
 		//check if there has been an update
 		if ($options != $newoptions) {
+			
 			//if there has been a change, save the changes in the WordPress database
 			$options = $newoptions;
+			
 			//check that the user has entered a user name
 			if ($options['pmc_TF_user'] == "") {
 				echo '<h1>You must enter a username</h1>';
 			} else {
 				update_option('widget_pmcFriends', $options);
 			} //close if
+			
 		} // close if
 		
 		//set the default options
 		if (!$options['pmc_TF_title']) $options['pmc_TF_title'] = "My Twitter Friends";
 		if (!$options['pmc_TF_user']) $options['pmc_TF_user'] = "";
 		if (!$options['pmc_TF_rows']) $options['pmc_TF_rows'] = 5;
-		if (!$options['pmc_TF_limit'] and $options['pmc_TF_limit'] !=0) $options['pmc_TF_limit'] = 20;
+		if (!$options['pmc_TF_limit'] and $options['pmc_TF_limit'] != 0) $options['pmc_TF_limit'] = 20;
 		if (!$options['pmc_TF_bgcolor']) $options['pmc_TF_bgcolor'] = "#FFFFFF";
 		if (!$options['pmc_TF_fgcolor']) $options['pmc_TF_fgcolor'] = "#000000";
 		if (!$options['pmc_TF_cache']) $options['pmc_TF_cache'] = 3600;
 		if (!$options['pmc_TF_title_link']) $options['pmc_TF_title_link'] = 'none';
 		if (!$options['pmc_TF_table']) $options['pmc_TF_table'] = "width: 120px; padding: 0; margin: 20px 0; border: 0; border-collapse: collapse; border-spacing: 0;";
+		if (!$options['pmc_TF_type']) $options['pmc_TF_type'] = 'friends';
 
 		
 		//get the options already saved in the database, encoding any HTML
@@ -433,6 +441,8 @@ function widget_pmcFriends_init() {
 		$pmcUpdateUser = htmlspecialchars($options['pmc_TF_update_user'], ENT_QUOTES);
 		$pmcTFTitleLink = htmlspecialchars($options['pmc_TF_title_link'], ENT_QUOTES);
 		$pmcTFTable = htmlspecialchars($options['pmc_TF_table'], ENT_QUOTES);
+		$pmcTFDisplay = htmlspecialchars($options['pmc_TF_type'], ENT_QUOTES);
+		$pmcTFPass = htmlspecialchars($options['pmc_TF_password'], ENT_QUOTES);
 		
 		//code to automatically enable checkbox if user has enabled setting
 		if ($pmcShowRSS) {
@@ -444,10 +454,15 @@ function widget_pmcFriends_init() {
 		//build the control panel
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_title">' . __('Title:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_title" name="pmc_TF_title" type="text" value="'.$pmcTFTitle.'" /></label></p>';
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_title_link">' . __('Title Link:', 'widgets');
-		echo pmcWriteSelect($pmcTFTitleLink);
+		echo pmcSelectLink($pmcTFTitleLink);
 		echo '</label></p>';
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_user">' . __('Your Twitter Name:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_user" name="pmc_TF_user" type="text" value="'.$pmcTFUser.'" /></label></p>';
-		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_rows">' . __('Friends per Row:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_rows" name="pmc_TF_rows" type="text" value="'.$pmcTFRows.'" /></label></p>';
+		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_password">' . __('Your Twitter Password:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_password" name="pmc_TF_password" type="password" value="'.$pmcTFPass.'" /></label></p>';
+		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_type">' . __('Display Friends or Followers?:', 'widgets');
+		echo pmcSelectDisplay($pmcTFDisplay);
+		echo '</label></p>';
+		echo '<p style="color: red; font-weight: bold;">If you change the "Display Friends or Followers" setting, please do a <a href="./admin.php?page=twitter-friends-delete" title="Delete Friends">delete all</a> followed by a <a href="./admin.php?page=twitter-friends-update" title="Manual Update">manual update</a></p>';
+		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_rows">' . __('Images per Row:', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_rows" name="pmc_TF_rows" type="text" value="'.$pmcTFRows.'" /></label></p>';
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_limit">' . __('Display Limit (0 for Display all):', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_limit" name="pmc_TF_limit" type="text" value="'.$pmcTFLimit.'" /></label></p>';
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_cache">' . __('Cache Update Interval: (in seconds)', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_cache" name="pmc_TF_cache" type="text" value="'.$pmcCacheUpdate.'" /></label></p>';
 		echo '<p style="margin: 20px auto;"><label style="display: block; width:300px; text-align: left;" for="pmc_TF_show_rss">' . __('Show RSS Link?', 'widgets') . ' <input style="display: block; width: 300px; text-align: left;" id="pmc_TF_bgcolor" name="pmc_TF_show_rss" type="checkbox"'.$pmcShowRSS.' /></label></p>';
@@ -459,7 +474,7 @@ function widget_pmcFriends_init() {
 	} //close pmcFriends_control()
 	
 	//function to write drop down list in control panel and automatically select currently stored value
-	function pmcWriteSelect($pmcCurrOpt) {
+	function pmcSelectLink($pmcCurrOpt) {
 		//start building the select tag
 		$pmcSelect = '<select style="display: block; width: 300px; text-align: left;" id="pmc_TF_title_link" name="pmc_TF_title_link">';
 		
@@ -484,7 +499,32 @@ function widget_pmcFriends_init() {
 		//return the completed tag
 		return $pmcSelect;
 			
-	} //close pmcWriteSelect	
+	} //close pmcSelectLink
+	
+	//function to write the HTML for the "Display" drop down
+	function pmcSelectDisplay($pmcOpt) {
+		//start building the drop down
+		$pmcSelect = '<select style="display: block; width: 300px; text-align: left;" id="pmc_TF_type" name="pmc_TF_type">';
+		
+		//build the list based on current option
+		switch ($pmcOpt) {
+			case 'friends':
+				$pmcSelect .= '<option value="friends" selected="selected">Friends</option><option value="followers">Followers</option>';
+				break;
+			case 'followers':
+				$pmcSelect .= '<option value="friends">Friends</option><option value="followers" selected="selected">Followers</option>';
+				break;
+			default:
+				$pmcSelect .= '<option value="friends" selected="selected">Friends</option><option value="followers">Followers</option>';
+		}
+		
+		//close select
+		$pmcSelect .= '</select>';
+		
+		//return the completed tag
+		return $pmcSelect;
+		
+	} //close pmcSelectDisplay
 	
 	//register widget and widget control
 	register_sidebar_widget('Twitter Friends', 'pmcDisplayFriends');
@@ -534,27 +574,38 @@ function pmcTFEdit() {
 	//use wpdb
 	global $wpdb;
 	
-	//set the table name
-	$pmcTableName = $wpdb->prefix . 'twitterfriends';
-	
 	//get the contents of the post variable
 	$pmcDelete = $_POST;
 	
+	//set the table name
+	$pmcTableName = $wpdb->prefix . 'twitterfriends';
+		
 	//check if the user has clicked a delete button
 	if ($pmcDelete) {
 		//the returned array contains the id of the user that we want to delete
 		$pmcDeleteID = array_keys($pmcDelete);
 		
-		//build the SQL
-		$SQL = "DELETE FROM $pmcTableName WHERE `id` LIKE $pmcDeleteID[0]";
-		
-		//run the query
-		$pmcResult = $wpdb->query($SQL);
-		
+		//check if the user wants to delete all 
+		if ($pmcDeleteID[0] == 'delete-all') {
+			//SQL to delete all entries
+			$SQL = "DELETE FROM $pmcTableName";
+		} else {
+			//delete a single entry
+			$SQL = "DELETE FROM $pmcTableName WHERE `id` LIKE $pmcDeleteID[0]";
+		} //close if
+
 	} //close if
+		
+	//run the query
+	$pmcResult = $wpdb->query($SQL);
 	
 	echo '<div class="wrap">';
 	echo '<h2>Twitter Friends In The Database</h2>';
+	echo '<h3>Delete All Friends</h3>';
+	echo '<p>Use this option if you want to remove all your Twitter Friends from the database.</p>';
+	echo '<p style="color: red; font-weight: bold;">Please back up your WordPress database before proceeding.</p>';
+	echo '<p><form name="delete-all-form" action="" method="post"><input type="submit" value="Delete All" class="button-primary" /><input type="hidden" name="delete-all" value="1" /></form></p>';
+	echo '<p>&nbsp;</p>';
 
 	//call the function to output the list of twitter friends from the database
 	pmcDisplayFriendsTable();
@@ -562,7 +613,7 @@ function pmcTFEdit() {
 	echo '</div>';
 		
 } //close pmcTFEdit
-	
+
 //function to display Manual Update page under Advanced Settings
 function pmcTFManualUpdate() {
 	//see if the user has clicked the update button
@@ -609,10 +660,7 @@ function pmcTFChangeUser() {
 			update_option('widget_pmcFriends', $pmcOptions);
 
 			//we also need to update the Twitter ID for RSS feeds etc
-			$pmcNewID = pmcRetrieveTwitterID($pmcUserName);
-		
-			//update the Twitter User ID
-			update_option('pmc_TF_ID', $pmcNewID);
+			$pmcNewID = pmcRetrieveTwitterID();
 					
 			//remove the current list of friends from the database
 			$SQL = "DROP TABLE " . $pmcTableName;
@@ -662,7 +710,7 @@ function pmcTFUninstall() {
 		pmcUninstallSettings();
 			
 		//display the confirmation message
-		echo '<div id="message" class="updated fade"><p>All widget settings have been <strong>removed</strong>. Thank you for using the Twitter Friends Widget.</p></div>';
+		echo '<div id="message" class="updated fade"><p>All widget settings have been <strong>removed</strong>. Thank you for using Twitter Friends Widget. You can now safely <a href="./plugins.php" title="Plugins Page">deactivate</a> Twitter Friends Widget</p></div>';
 
 	} //close if
 		
