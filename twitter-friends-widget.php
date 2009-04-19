@@ -3,7 +3,7 @@
 Plugin Name: Twitter Friends Widget
 Plugin URI: http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget/
 Description: Widget to display your Twitter Friends in the sidebar.
-Version: 2.6
+Version: 2.7
 Author: Paul McCarthy
 Author URI: http://www.paulmc.org/whatithink
 */
@@ -157,7 +157,43 @@ function widget_pmcFriends_init() {
 			
 	} //close pmcGetFriends
 	
-	
+	//function to get the number of the users followers and friends
+	function pmcGetFriendsCount() {
+		//get the users options
+		$pmcOptions = get_option('widget_pmcFriends');
+		$pmcUser = $pmcOptions['pmc_TF_user'];
+		
+		//url to get user info from Twitter
+		$pmcURL = "http://twitter.com/users/show/$pmcUser.xml";
+		
+		//use curl to get the info
+		$pmcCurl = curl_init();
+		
+		//set the curl options
+		curl_setopt($pmcCurl, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($pmcCurl, CURLOPT_BINARYTRANSFER, 1);
+		curl_setopt($pmcCurl, CURLOPT_URL, $pmcURL);
+		curl_setopt($pmcCurl, CURLOPT_CONNECTTIMEOUT, 2);
+		
+		//get the info
+		$pmcUserInfo = curl_exec($pmcCurl);
+		
+		//close curl connection
+		curl_close($pmcCurl);
+		
+		//search for the number of followers
+		preg_match('/<followers_count>(.*)<\/followers_count>/', $pmcUserInfo, $pmcFollowersCount);
+		
+		//search for the number of friends
+		preg_match('/<friends_count>(.*)<\/friends_count>/', $pmcUserInfo, $pmcFriendsCount);
+		
+		//store the two counts
+		update_option('pmc_TF_followers_count', $pmcFolllowersCount[0]);
+		update_option('pmc_TF_friends_count', $pmcFriendsCount[0]);
+		
+	}
+		
+		
 	//function to add the table to the database
 	function pmcAddTable() {
 		//use WordPress db class
@@ -192,6 +228,7 @@ function widget_pmcFriends_init() {
 			//if an update is required, call the function to update the db
 			pmcGetFriends();
 			pmcRetrieveTwitterID();
+			pmcGetFriendsCount();
 		}
 		//extract the Widget display settings
 		extract($pmcArgs);
@@ -227,10 +264,10 @@ function widget_pmcFriends_init() {
 		}
 		
 		//create sql to get screen names from  database
-		$SQL = "SELECT `screen_name`, `profile_image_url` FROM `" . $pmcTableName . "`";
+		$SQL = "SELECT * FROM `" . $pmcTableName . "`";
 		
 		//run the query and return an associative array
-		$pmcResults = $wpdb->get_results($SQL, ARRAY_N);
+		$pmcResults = $wpdb->get_results($SQL);
 		
 		//get the length of the returned array
 		$pmcResultsLen = count($pmcResults);
@@ -250,10 +287,10 @@ function widget_pmcFriends_init() {
 				echo $pmcTitle;
 				break;
 			case 'page':
-				echo '<a href="http://twitter.com/' . $pmcTFUser . '" title="My Twitter Home Timeline">' . $pmcTitle . '</a>';
+				echo '<a rel="nofollow" href="http://twitter.com/' . $pmcTFUser . '" title="My Twitter Home Timeline">' . $pmcTitle . '</a>';
 				break;
 			case 'rss':
-				echo '<a href="https://twitter.com/statuses/user_timeline/' . $pmcTFID . '.rss" title="Subscribe to my Twitter Feed">';
+				echo '<a rel="nofollow" href="https://twitter.com/statuses/user_timeline/' . $pmcTFID . '.rss" title="Subscribe to my Twitter Feed">';
 				echo '<img style="margin: 0 10px 0 0; border: 0; text-decoration: none;" src="' . get_bloginfo('wpurl') . '/wp-content/plugins/twitter-friends-widget/rss.png" title="Subscribe to my Twitter RSS" alt="RSS: " />' . $pmcTitle . '</a>';
 				break;
 			default:
@@ -264,17 +301,37 @@ function widget_pmcFriends_init() {
 		//close the widget title
 		echo $after_title;
 		
+		//counter to check if a row should be closed
+		$i = 1;
+		
+		//flag to check if a new row should be opened
+		$pmcNewRow = TRUE;
+		
 		//start the HTML table
-		$pmcHTML = '<table class="pmcTFTable"><tr class="pmcTFTR">';
+		$pmcHTML = '<table class="pmcTFTable">';
 		
 		//iterate through the arrays and build the HTML table
-		for ($i=1; $i<=$pmcTFLimit; $i++) {
-			$j = $i-1;
-			$pmcHTML .= '<td class="pmcTFTD"><a href="http://twitter.com/' . $pmcResults[$j][0] . '" title="' . $pmcResults[$j][0] . '"><img class="pmcTFimg" src="' . $pmcResults[$j][1] . '" alt="' . $pmcResults[$j][0] . '" /></a></td>' . "\n";
+		foreach ($pmcResults as $pmcFriend) {
+			
+			//check if we need to open a new row
+			if ($pmcNewRow) {
+				$pmcHTML .= '<tr class="pmcTFTR">' . "\n";
+				$pmcNewRow = FALSE;
+			}
+			
+			//build the links to user sites using profile image
+			$pmcHTML .= '<td class="pmcTFTD"><a rel="nofollow" href="http://twitter.com/' . $pmcFriend->screen_name . '" title="' . $pmcFriend->screen_name . '"><img class="pmcTFimg" src="' . $pmcFriend->profile_image_url . '" alt="' . $pmcFriend->screen_name . '" /></a></td>' . "\n";
 			//check if we have reached the end of a row
 			if ($i % $pmcTFRows == 0 ) {
-				$pmcHTML .= '</tr><tr class="pmcTFTR">' . "\n";
+				$pmcHTML .= '</tr>' . "\n";
+				//set the flag to open a new row
+				$pmcNewRow = TRUE;
+				
 			} //close if
+			
+			//increment the counter
+			$i++;
+			
 		} //close for
 		
 		//close the HTML table
@@ -282,9 +339,9 @@ function widget_pmcFriends_init() {
 		
 		//check if the user wants to display the RSS link and add the link to the rss feed
 		if ($pmcTFShowRSS) {
-			$pmcHTML .= '<p><a href="https://twitter.com/statuses/user_timeline/' . $pmcTFID . '.rss" title="Subscribe to my Twitter Feed">';
+			$pmcHTML .= '<p><a rel="nofollow" href="https://twitter.com/statuses/user_timeline/' . $pmcTFID . '.rss" title="Subscribe to my Twitter Feed">';
 			$pmcHTML .= '<img style="margin: 0 10px 0 0; border: 0; text-decoration: none;" src="' . get_bloginfo('wpurl') . '/wp-content/plugins/twitter-friends-widget/rss.png" title="Subscribe to my Twitter RSS" alt="RSS: " /></a>';
-			$pmcHTML .= '<a href="https://twitter.com/statuses/user_timeline/' . $pmcTFID . '.rss" title="Subscribe to my Twitter Feed">';
+			$pmcHTML .= '<a rel="nofollow" href="https://twitter.com/statuses/user_timeline/' . $pmcTFID . '.rss" title="Subscribe to my Twitter Feed">';
 			$pmcHTML .= 'Subscribe to my Twitter RSS</a></p>';
 		}
 		
@@ -553,6 +610,9 @@ function pmcTFAdminMenu() {
 function pmcTFOptions() {
 	echo '<div class="wrap">';
 	echo '<h2>Twitter Friends Advanced Settings</h2>';
+	echo '<p>';
+	pmcGetFriendsCount();
+	echo '</p>';
 	echo '<p>This page contains advanced settings for the Twitter Friends Plugin. To change the display and output settings for the Twitter Friends Widget, please click <a href="./widgets.php" title="Widgets">here</a>.</p>';
 	echo '<h3>Delete Friends</h3>';
 	echo '<p>Delete Twitter friends from the cache. This does not delete the friend from your Twitter Profile. Useful if you want to refresh the profile image or screen name of a small number of Twitter Friends.</p>';
@@ -817,7 +877,79 @@ function pmcUninstallSettings() {
 	//remove the last cache update time
 	delete_option('pmc_last_update');
 	
+	//remove the friends count
+	delete_option('pmc_TF_friends_count');
+	
+	//remove the followers count
+	delete_option('pmc_TF_followers_count');
+	
 } //close pmcUninstallSettings()
+
+//function to display friends using shortcode
+function pmcShortcode($atts) {
+	
+	//use wpdb
+	global $wpdb;
+	
+	//table name
+	$pmcTable = $wpdb->prefix . 'twitterfriends';
+	
+	//set the default shortcode attributes
+	extract(shortcode_atts(array(
+			'friends_per_row' => 20,
+			'num_friends' => 100,
+			), $atts));	
+	
+	//build the SQL to get friends list from db
+	$SQL = "SELECT * FROM `" . $pmcTable . "` LIMIT " . $num_friends;
+	
+	//query db
+	$pmcResult = $wpdb->get_results($SQL);
+	
+	//start building the output table
+	$pmcOutput = '<table class="pmcTFTable">';
+	
+	//we'll use a flag to check if a new row should be opened
+	$pmcFlag = TRUE;
+	
+	//we'll use a counter to check if the table row should be closed
+	$i = 1;
+	
+	//loop through the results
+	foreach ($pmcResult as $pmcFriend) {
+		
+		//check if we need to open a new row
+		if ($pmcFlag) {
+			//add the html to open the row
+			$pmcOutput .= '<tr class="pmcTFTR">';
+			//set the open row flag to false
+			$pmcFlag = FALSE;
+		}
+		
+		//build the link to the friends twitter page using their profile image
+		$pmcOutput .= '<td class="pmcTFTD"><a rel="nofollow" href="http://twitter.com/' . $pmcFriend->screen_name . '" title="' . $pmcFriend->screen_name . '"><img style="height: 24px; width: 24px;" src="' . $pmcFriend->profile_image_url . '" title="' . $pmcFriend->screen_name . '" alt="' . $pmcFriend->screen_name . '" /></a></td>';
+		
+		//check if we need to close the row
+		if ($i % $friends_per_row == 0) {
+			
+			$pmcOutput .= '</tr>';
+			
+			//if we close the row, we'll need to open a new row afterwards
+			//if this is the last friend in the list, then the code to write the html for a new row won't be called.
+			$pmcFlag = TRUE;
+		}
+		
+		//increment the counter for the next friend
+		$i++;
+	}
+
+	//close table
+	$pmcOutput .= '</table>';
+	
+	//return the finished table to the shortcode macro handler
+	return $pmcOutput;
+	
+} //close pmcShortcode
 
 //make sure that the plugin is not loaded until after the widgets are
 add_action("plugins_loaded", "pmcTFAdvanced_init");
@@ -825,4 +957,6 @@ add_action("plugins_loaded", "pmcTFAdvanced_init");
 add_action('widgets_init', 'widget_pmcFriends_init');
 //action to add styles to the header
 add_action('wp_head', 'pmcTFStyles');
+//action to allow shortcode
+add_shortcode('twitter-friends', 'pmcShortcode');
 ?>

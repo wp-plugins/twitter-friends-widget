@@ -20,6 +20,16 @@ Twitter Friends is a WordPress plugin that displays your Twitter friends/ follow
 1. Update the options, from the Widgets Panel under the Appearance/ Design Panel. (Depends on your version of WordPress.)
 1. Access the "Twitter Friends Widget - Advanced Settings" from the Main Administration Menu.
 
+= Using Twitter Friends Shortcode =
+
+Twitter Friends now includes a WordPress shortcode that allows you to display your friends list in a post/ page. To use the shortcode, create a new post/ page and enter the  Twitter Friends shortcode. The shortcode uses the following syntax:
+
+[twitter-friends friends_per_row="20" num_friends="100"]
+
+The shortcode takes two attributes:
+1. friends_per_row: The amount of Twitter Friends to display across the page. Default is 20;
+1. num_friends: The number of friends to display. Default is 20;
+
 == Frequently Asked Questions ==
 
 = The profile images are not being displayed =
@@ -78,6 +88,12 @@ The Advanced Settings Plugin allows you to perform the following actions:
 Feedback and requests for new features are welcome. Just leave a comment on the plugin homepage. (http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget) or via Twitter to @whatithink
 
 == Changelog ==
+
+= Version 2.7 =
+* Added shortcode.
+* Added rel="nofollow" to Twitter Profile/ RSS links.
+* Cleaned up some database code.
+* Bug Fix: Updated code for genarating output table to remove an XHTML validation error.
 
 = Version 2.6 =
 * Added option to specify whether Friends or Followers are displayed.
