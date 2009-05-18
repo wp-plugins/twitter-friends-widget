@@ -659,6 +659,13 @@ function pmcUpdateDBStruct() {
 		update_option('pmc_TF_cache', $pmcCache);
 		update_option('pmc_TF_type', $pmcType);
 		
+		//if the username exists, then we'll perform an update
+		if ($pmcUser != '') {
+			pmcGetCounts();
+			pmcGetFriends();
+			pmcGetFollowers();
+		}
+		
 	}
 }
 	

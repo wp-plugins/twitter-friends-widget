@@ -27,8 +27,8 @@ Twitter Friends now includes a WordPress shortcode that allows you to display yo
 
 The shortcode takes four attributes:
 1. title: The title displayed by the shortcode output. The default is "My Twitter Friends".
-1. limit: The number of Twitter Friends to display. Default is 20;
-1. type: Display "friends" or "followers". Default is "friends";
+1. limit: The number of Twitter Friends to display. Default is 20.
+1. type: Display "friends" or "followers". Default is "friends".
 1. size: Image size to display - "mini", "normal" or "bigger". Default is "mini".
 
 == Frequently Asked Questions ==
