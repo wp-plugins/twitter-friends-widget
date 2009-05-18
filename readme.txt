@@ -42,6 +42,9 @@ Of course it will. That's why there's an option within the plugin to limit the n
 = Why doesn't the cache update exactly after x seconds? =
 The plugin will only check if it needs to be updated when the page displaying the plugin is loaded. So if you set the update interval to 3600 seonds, it will update the cache the next time the page is loaded after that hour has passed.
 
+= How do I delete Friends/ Followers from the plugin? =
+The ability to delete friends has been integrated into the Twitter Friends menu option. The page now displays your friends and followers along with a delete button.
+
 == Settings ==
 
 Widget Settings.
@@ -64,6 +67,9 @@ Widget Settings.
 Feedback and requests for new features are welcome. Just leave a comment on the plugin homepage. (http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget) or via Twitter to @whatithink
 
 == Changelog ==
+
+= Version 3.01 =
+* Updated CSS for better compatibility with IE.
 
 = Version 3.0 =
 * Complete rewrite of plugin.

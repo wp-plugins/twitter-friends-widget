@@ -3,7 +3,7 @@
 Plugin Name: Twitter Friends Widget
 Plugin URI: http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget/
 Description: Widget to display your Twitter Friends in the sidebar.
-Version: 3.0
+Version: 3.01
 Author: Paul McCarthy
 Author URI: http://www.paulmc.org/whatithink
 */
@@ -832,6 +832,60 @@ function pmcShortcode($atts) {
 		return $pmcOut;
 }
 
+//function to add styles to blog header
+function pmcWriteStyles() {
+		echo '<!-- Styles for Twitter Friends Widget -->' . "\n";
+		echo '<style type="text/css">' . "\n";
+		echo '.pmcTFContainDiv {' . "\n";
+		echo 'display: inline-block;' . "\n";
+		echo 'display: -moz-inline-box;' . "\n";
+		echo 'margin: 0;' . "\n";
+		echo '}' . "\n";
+		echo "\n";
+		echo '.pmcTFImgMini {' . "\n";
+		echo 'display: inline-block;' . "\n";
+		echo 'display: -moz-inline-box;' . "\n";
+		echo 'float: left;' . "\n";
+		echo 'width: 24px;' . "\n";
+		echo 'height: 24px;' . "\n";
+		echo 'padding: 1px;' . "\n";
+		echo 'margin: 0;' . "\n";
+		echo '}' . "\n";
+		echo "\n";
+		echo '.pmcTFImgNorm {' . "\n";
+		echo 'display: inline-block;' . "\n";
+		echo 'display: -moz-inline-box;' . "\n";
+		echo 'width: 48px;' . "\n";
+		echo 'height: 48px;' . "\n";
+		echo 'padding: 1px;' . "\n";
+		echo 'margin: 0;' . "\n";
+		echo '}' . "\n";
+		echo "\n";
+		echo '.pmcTFImgBig {' . "\n";
+		echo 'display: inline-block;' . "\n";
+		echo 'display: -moz-inline-box;' . "\n";
+		echo 'width: 96px;' . "\n";
+		echo 'height: 96px;' . "\n";
+		echo 'padding: 1px;' . "\n";
+		echo 'margin: 0;' . "\n";
+		echo '}' . "\n";
+		echo "\n";
+		echo '.pmcTFRSS, .pmcTFCounts {' . "\n";
+		echo 'display: block;' . "\n";
+		echo 'margin: 10px 0;' . "\n";
+		echo 'text-align: left;' . "\n";
+		echo '}' . "\n";
+		echo '* html .pmcTFContainDiv, .pmcTFImgMini, .pmcTFImgNorm, .pmcTFImgBig {' . "\n";
+		echo 'display: inline;' . "\n";
+		echo '}' . "\n";
+		echo "\n";
+		echo '* + html .pmcTFContainDiv, .pmcTFImgMini, .pmcTFImgNorm, .pmcTFImgBig {' . "\n";
+		echo 'display: inline;' . "\n";
+		echo '}' . "\n";
+		echo '</style>' . "\n";
+		
+}
+
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 //-------------------------- WIDGET FUNCTIONS ----------------------------------
@@ -902,7 +956,7 @@ function widget_TF_init() {
 				$pmcOut .= '<a rel="nofollow" href="http://twitter.com/'. $pmcUser . '" title="' . $pmcUser . ' on Twitter">' . $pmcTitle . '</a>';
 				break;
 			case 'rss':
-				$pmcOut .= '<a rel="nofollow" href="http://twitter.com/statuses/user_timeline/' . trim($pmcID) . '.rss" title="' . $pmcUser . ' Twitter Updates via RSS">' . $pmcTitle . '</a>';
+				$pmcOut .= '<a rel="nofollow" href="http://twitter.com/statuses/user_timeline/' . trim($pmcID) . '.rss" title="Follow ' . $pmcUser . ' Twitter Updates via RSS">' . $pmcTitle . '</a>';
 				break;
 			default:
 				$pmcOut .= $pmcTitle;
@@ -914,35 +968,32 @@ function widget_TF_init() {
 		
 		//loop through the results and build the output
 		foreach ($pmcResult as $pmcFriend) {
-			$pmcOut .= '<div style="display: inline-block; margin: 0;"><a rel="nofollow" href="http://twitter.com/' . $pmcFriend->screen_name . '" title="' . $pmcFriend->name . ' on Twitter">';
+			$pmcOut .= '<div class="pmcTFContainDiv"><a rel="nofollow" href="http://twitter.com/' . $pmcFriend->screen_name . '" title="' . $pmcFriend->name . ' on Twitter">';
 			
 			//check what size image the user wants to display and display accordingly
 			switch ($pmcImageSize) {
 				case 'mini':
 					$pmcImage = str_replace('_normal.', '_mini.', $pmcFriend->profile_image_url);
-					$pmcOut .= '<img style="display: inline-block; float: left; width: 24px; height: 24px; padding: 3px; margin: 0;" src="' . $pmcImage . '" alt="' . $pmcFriend->screen_name . '" /></a></div>' . "\n";
+					$pmcOut .= '<img class="pmcTFImgMini" src="' . $pmcImage . '" alt="' . $pmcFriend->screen_name . '" /></a></div>' . "\n";
 					break;
 				case 'normal':
-					$pmcOut .= '<img style="display: inline-block; width: 48px; height: 48px; padding: 3px; margin: 0;" src="' . $pmcFriend->profile_image_url . '" alt="' . $pmcFriend->screen_name . '" /></a></div>' . "\n";
+					$pmcOut .= '<img class="pmcTFImgNorm" src="' . $pmcFriend->profile_image_url . '" alt="' . $pmcFriend->screen_name . '" /></a></div>' . "\n";
 					break;
 				case 'bigger':
 					$pmcImage = str_replace('_normal.', '_bigger.', $pmcFriend->profile_image_url);
-					$pmcOut .= '<img style="display: inline-block; width: 96px; height: 96px; padding: 3px; margin: 0;" src="' . $pmcImage . '" alt="' . $pmcFriend->screen_name . '" /></a></div>' . "\n";
+					$pmcOut .= '<img class="pmcTFImgBig" src="' . $pmcImage . '" alt="' . $pmcFriend->screen_name . '" /></a></div>' . "\n";
 					break;
 			}
-			
-			
-			
 		}
 
 		//check if the user wants to display the rss link
 		if ($pmcShowRSS == 'yes') {
-			$pmcOut .= '<div style="display: block; margin: 10px 0; text-align: left;"><a rel="nofollow" href="http://twitter.com/statuses/user_timeline/' . trim($pmcID) . '.rss" title="' . $pmcUser . ' Twitter Updates via RSS">' . $pmcUser . ' Twitter Updates via RSS</a></div>';
+			$pmcOut .= '<div class="pmcTFRSS"><a rel="nofollow" href="http://twitter.com/statuses/user_timeline/' . trim($pmcID) . '.rss" title="Follow ' . $pmcUser . ' Twitter Updates via RSS">' . $pmcUser . ' Twitter Updates via RSS</a></div>';
 		}
 		
 		//check if the user wants to display friends followers counts
 		if ($pmcShowCounts == 'yes') {
-			$pmcOut .= '<div style="display: block; margin: 10px 0; text-align: left;">Friends: ' . $pmcFriendsCount . ' Followers: '	. $pmcFollowersCount . '</div>';
+			$pmcOut .= '<div class="pmcTFCounts">Friends: ' . $pmcFriendsCount . ' Followers: '	. $pmcFollowersCount . '</div>';
 		}
 		
 		//close widget display
@@ -976,4 +1027,6 @@ add_action('plugins_loaded', 'pmcCallCheck');
 add_action('widgets_init', 'widget_TF_init');
 //add shortcode
 add_shortcode('twitter-friends', 'pmcShortcode');
+//write styles to header
+add_action('wp_head', 'pmcWriteStyles');
 ?>
