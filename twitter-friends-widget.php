@@ -31,8 +31,8 @@ Author URI: http://www.paulmc.org/whatithink
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 //THESE ARE THE VARIOUS OPTIONS STORED IN THE DATABASE
-//pmc_TF_friends_count - stores number of friends
-//pmc_TF_followers_count - stores number of followers
+//pmc_TF_friends - stores number of friends
+//pmc_TF_followers - stores number of followers
 //pmc_TF_db - stores db version
 //pmc_TF_user - twitter user name
 //pmc_TF_password - twitter password
@@ -46,6 +46,7 @@ Author URI: http://www.paulmc.org/whatithink
 //pmc_TF_friends_time - timestamp for last friends update
 //pmc_TF_followers_time - timestamp for last followers update
 //pmc_TF_ID - users numeric Twitter ID
+//pmc_TF_show_cunts - display friends and followers counts
 
 function pmc_r($array) {
 	echo '<pre>';
@@ -164,6 +165,9 @@ function pmcTFOptions() {
 		'normal' => 'Normal',
 		'bigger' => 'Large'
 	);
+	//array to hold options for showing friends/ followers counts
+	//same as the RSS options
+	$pmcCountsOpts = $pmcRSSOpts;
 		
 	//build the form
 	echo '<div class="wrap">';
@@ -198,11 +202,14 @@ function pmcTFOptions() {
 	echo '<p><label style="display:block; width: 300px; margin: 10px 0; padding: 10px; 0" for="pmc_TF_show_rss">Show RSS Link?</label><select style="display:block; width: 300px; margin: 10px;" name="pmc_TF_show_rss" id="pmc_TF_show_rss">';
 	echo pmcWriteSelect($pmcRSSOpts, get_option('pmc_TF_show_rss'));
 	echo '</select></p>';
+		echo '<p><label style="display:block; width: 300px; margin: 10px 0; padding: 10px; 0" for="pmc_TF_show_counts">Show Friends &amp; Followers Counts?</label><select style="display:block; width: 300px; margin: 10px;" name="pmc_TF_show_counts" id="pmc_TF_show_counts">';
+	echo pmcWriteSelect($pmcCountsOpts, get_option('pmc_TF_show_counts'));
+	echo '</select></p>';
 	echo '</fieldset>';
 	
 	echo '<p style="display: block; clear: both; margin: 20px;" ><input type="submit" value="Save settings" class="button-primary" /><input type="reset" value="Cancel" class="button-primary" /></p>';
 	echo '<input type="hidden" name="action" value="update" />';
-	echo '<input type="hidden" name="page_options" value="pmc_TF_user,pmc_TF_password,pmc_TF_title,pmc_TF_title_link,pmc_TF_type,pmc_TF_limit,pmc_TF_image_size,pmc_TF_show_rss,pmc_TF_cache,pmc_TF_bgcolor,pmc_TF_fgcolor" />';
+	echo '<input type="hidden" name="page_options" value="pmc_TF_user,pmc_TF_password,pmc_TF_title,pmc_TF_title_link,pmc_TF_type,pmc_TF_limit,pmc_TF_image_size,pmc_TF_show_rss,pmc_TF_cache,pmc_TF_show_counts" />';
 	
 	echo '</form>';
 	echo '</div>';
@@ -312,8 +319,8 @@ function pmcTFUninstall() {
 		check_admin_referer('tf-uninstall');
 		
 		//delete the various options from the database
-		if (delete_option('pmc_TF_friends_count')) echo '<p>Deleted pmc_TF_friends</p>';
-		if (delete_option('pmc_TF_followers_count')) echo '<p>Deleted pmc_TF_followers</p>';
+		if (delete_option('pmc_TF_friends')) echo '<p>Deleted pmc_TF_friends</p>';
+		if (delete_option('pmc_TF_followers')) echo '<p>Deleted pmc_TF_followers</p>';
 		if (delete_option('pmc_TF_db')) echo '<p>Deleted pmc_TF_db</p>';
 		if (delete_option('pmc_TF_user')) echo '<p>Deleted pmc_TF_user</p>';
 		if (delete_option('pmc_TF_password')) echo '<p>Deleted pmc_TF_password</p>';
@@ -852,6 +859,9 @@ function widget_TF_init() {
 		$pmcType = get_option('pmc_TF_type');
 		$pmcID = get_option('pmc_TF_ID');
 		$pmcUser = get_option('pmc_TF_user');
+		$pmcShowCounts = get_option('pmc_TF_show_counts');
+		$pmcFriendsCount = get_option('pmc_TF_friends');
+		$pmcFollowersCount = get_option('pmc_TF_followers');
 		
 		//check if the user wants to display all users
 		if ($pmcLimit == 0) {
@@ -921,7 +931,12 @@ function widget_TF_init() {
 		if ($pmcShowRSS == 'yes') {
 			$pmcOut .= '<div style="display: block; margin: 10px 0; text-align: left;"><a rel="nofollow" href="http://twitter.com/statuses/user_timeline/' . trim($pmcID) . '.rss" title="' . $pmcUser . ' Twitter Updates via RSS">' . $pmcUser . ' Twitter Updates via RSS</a></div>';
 		}
-				
+		
+		//check if the user wants to display friends followers counts
+		if ($pmcShowCounts == 'yes') {
+			$pmcOut .= '<div style="display: block; margin: 10px 0; text-align: left;">Friends: ' . $pmcFriendsCount . ' Followers: '	. $pmcFollowersCount . '</div>';
+		}
+		
 		//close widget display
 		$pmcOut .= $after_widget;
 		

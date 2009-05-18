@@ -58,6 +58,7 @@ Widget Settings.
 * Display Limit: How many friends you want to display. By default this is set to 20. Friends are displayed in the order that they joined Twitter. Set this to 0 to display all.
 * Profile Image Size: Size of the profile image to display. Options are "mini", "normal" and "bigger"
 * Show RSS Link: Chose whether to show a link to your Twitter RSS feed or not.
+* Show Friends & Followers Counts: Show how many Twitter Friends and Twitter Followers you have.
 
 == Feedback ==
 Feedback and requests for new features are welcome. Just leave a comment on the plugin homepage. (http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget) or via Twitter to @whatithink
@@ -76,6 +77,7 @@ Feedback and requests for new features are welcome. Just leave a comment on the 
 * Updated code to retrieve all friends/ followers from Twitter.
 * Removed options to specify background and text colours - no longer required since display table was removed.
 * Updated shortcode to allow more options.
+* Added option to display Friends and Followers Counts.
 
 
 = Version 2.7 =
