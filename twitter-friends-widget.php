@@ -238,7 +238,7 @@ function pmcTFChangeUser() {
 			//update the username
 			update_option('pmc_TF_user', $pmcUser);
 			//update the password
-			update_option('pmc_TF_pass', $pmcUser);
+			update_option('pmc_TF_password', $pmcUser);
 			//delete current friends from the database
 			$pmcSQL = "DELETE FROM $pmcTable WHERE `id` LIKE '%'";
 			//run the query
@@ -247,9 +247,10 @@ function pmcTFChangeUser() {
 			//get the friends for the new username
 			pmcGetCounts();
 			pmcGetFriends();
+			pmcGetFollowers();
 			
 			//build message
-			$pmcMessage = 'Your Twitter user name and password have been updated. The database has been updated with your the friends for yoru new user name.';
+			$pmcMessage = 'Your Twitter user name and password have been updated. The database has been updated with your the friends for your new user name.';
 	} else {
 		//check if the username or password have been left blank
 		//start output message
