@@ -68,6 +68,11 @@ Feedback and requests for new features are welcome. Just leave a comment on the 
 
 == Changelog ==
 
+= Version 3.02 =
+* Added WordPress Mu compatibility. (Fixed issue with WPMU users not being able to save settings).
+* Minor update to CSS used to display images. 
+* Added Settings link to Plugins page. (Appears beside Deactivate and Edit links)
+
 = Version 3.01 =
 * Updated CSS for better compatibility with IE.
 

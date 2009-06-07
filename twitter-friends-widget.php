@@ -3,7 +3,7 @@
 Plugin Name: Twitter Friends Widget
 Plugin URI: http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget/
 Description: Widget to display your Twitter Friends in the sidebar.
-Version: 3.01
+Version: 3.02
 Author: Paul McCarthy
 Author URI: http://www.paulmc.org/whatithink
 */
@@ -46,13 +46,8 @@ Author URI: http://www.paulmc.org/whatithink
 //pmc_TF_friends_time - timestamp for last friends update
 //pmc_TF_followers_time - timestamp for last followers update
 //pmc_TF_ID - users numeric Twitter ID
-//pmc_TF_show_cunts - display friends and followers counts
-
-function pmc_r($array) {
-	echo '<pre>';
-	print_r($array);
-	echo '</pre>';
-}
+//pmc_TF_show_counts - display friends and followers counts
+//pmc_TF_show_follow - display a button to automatically follow on Twitter
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
@@ -138,7 +133,7 @@ function pmcTFAdmin() {
 	echo '</div>';
 }
 
-//function to display widget settings form
+//function to display pre-WP 2.7 widget settings form
 function pmcTFOptions() {
 	//array to hold options for title link
 	$pmcTitleLinkOpts = array(
@@ -165,9 +160,14 @@ function pmcTFOptions() {
 		'normal' => 'Normal',
 		'bigger' => 'Large'
 	);
+	
 	//array to hold options for showing friends/ followers counts
 	//same as the RSS options
 	$pmcCountsOpts = $pmcRSSOpts;
+	
+	//array to hold options for follow button
+	//same as RSS options
+	$pmcFollowOpts = $pmcRSSOpts;
 		
 	//build the form
 	echo '<div class="wrap">';
@@ -175,8 +175,6 @@ function pmcTFOptions() {
 	echo '<p>Here is where you can change the settings for the Twitter Friends Widget.</p>';
 	echo '<div style="display: block;">';
 	echo '<form action="options.php" method="post">';
-	wp_nonce_field('update-options');
-
 	
 	echo '<fieldset style="display: block; float: left; border: 1px solid #aaa; background-color: #eee; padding: 10px; margin: 0 20px 40px 20px; width: 320px;"><legend style="padding: 0 5px; color: #666;">User Settings</legend>';
 	echo '<p><label style="display:block; width: 300px; margin: 10px 0; padding: 10px 0;" for="pmc_TF_user">Twitter User Name:</label><input style="display:block; width: 300px; margin: 10px 0;" type="text" name="pmc_TF_user" id="pmc_TF_user" value="' . get_option('pmc_TF_user') . '" /></p>';
@@ -202,18 +200,44 @@ function pmcTFOptions() {
 	echo '<p><label style="display:block; width: 300px; margin: 10px 0; padding: 10px; 0" for="pmc_TF_show_rss">Show RSS Link?</label><select style="display:block; width: 300px; margin: 10px;" name="pmc_TF_show_rss" id="pmc_TF_show_rss">';
 	echo pmcWriteSelect($pmcRSSOpts, get_option('pmc_TF_show_rss'));
 	echo '</select></p>';
-		echo '<p><label style="display:block; width: 300px; margin: 10px 0; padding: 10px; 0" for="pmc_TF_show_counts">Show Friends &amp; Followers Counts?</label><select style="display:block; width: 300px; margin: 10px;" name="pmc_TF_show_counts" id="pmc_TF_show_counts">';
+	echo '<p><label style="display:block; width: 300px; margin: 10px 0; padding: 10px; 0" for="pmc_TF_show_counts">Show Friends &amp; Followers Counts?</label><select style="display:block; width: 300px; margin: 10px;" name="pmc_TF_show_counts" id="pmc_TF_show_counts">';
 	echo pmcWriteSelect($pmcCountsOpts, get_option('pmc_TF_show_counts'));
 	echo '</select></p>';
 	echo '</fieldset>';
 	
 	echo '<p style="display: block; clear: both; margin: 20px;" ><input type="submit" value="Save settings" class="button-primary" /><input type="reset" value="Cancel" class="button-primary" /></p>';
-	echo '<input type="hidden" name="action" value="update" />';
-	echo '<input type="hidden" name="page_options" value="pmc_TF_user,pmc_TF_password,pmc_TF_title,pmc_TF_title_link,pmc_TF_type,pmc_TF_limit,pmc_TF_image_size,pmc_TF_show_rss,pmc_TF_cache,pmc_TF_show_counts" />';
+	
+	//check if the settings api is supported by looking for the register_setting function
+	if (!function_exists('register_setting')) {
+		//pre WP 2.7 functionality
+		wp_nonce_field('update-options');
+		echo '<input type="hidden" name="action" value="update" />';
+		echo '<input type="hidden" name="page_options" value="pmc_TF_user,pmc_TF_password,pmc_TF_title,pmc_TF_title_link,pmc_TF_type,pmc_TF_limit,pmc_TF_image_size,pmc_TF_show_rss,pmc_TF_cache,pmc_TF_show_counts" />';
+	} else {
+		//WP 2.7+ functionality
+		//also reqd for WPMU compatibility
+		settings_fields('twitter-friends-widget');
+	}
 	
 	echo '</form>';
 	echo '</div>';
 	echo '</div>';	
+}
+
+//function to create sections and fields for WP 2.7+ options form - required for WPMU 2.7 compatibility
+function pmcTFOptions_init() {	
+	
+	//register the settings
+	register_setting('twitter-friends-widget', 'pmc_TF_user');
+	register_setting('twitter-friends-widget', 'pmc_TF_password');
+	register_setting('twitter-friends-widget', 'pmc_TF_cache');
+	register_setting('twitter-friends-widget', 'pmc_TF_title');
+	register_setting('twitter-friends-widget', 'pmc_TF_title_link');
+	register_setting('twitter-friends-widget', 'pmc_TF_type');
+	register_setting('twitter-friends-widget', 'pmc_TF_limit');
+	register_setting('twitter-friends-widget', 'pmc_TF_image_size');
+	register_setting('twitter-friends-widget', 'pmc_TF_show_rss');
+	register_setting('twitter-friends-widget', 'pmc_TF_show_counts');
 }
 
 //function to change Twitter User
@@ -337,11 +361,12 @@ function pmcTFUninstall() {
 		if (delete_option('pmc_TF_friends_time')) echo '<p>Deleted pmc_TF_friends_time</p>';
 		if (delete_option('pmc_TF_followers_time')) echo '<p>Deleted pmc_TF_followers_time</p>';
 		if (delete_option('pmc_TF_ID')) echo '<p>Deleted pmc_TF_ID</p>';
+		if (delete_option('pmc_TF_show_follow')) echo '<p>Deleted pmc_TF_show_follow/p>';
 		
 		//drop the table from the table
 		$pmcSQL = "DROP TABLE $pmcTable";
 		//execute the query
-		$pmcResult = $wpdb->get_results($pmcSQL);
+		$pmcResult = $wpdb->query($pmcSQL);
 		
 		//display message
 		if ($pmcResult) {
@@ -563,14 +588,14 @@ function pmcTFDisplay($pmcDisplayType) {
 	
 	//display each friend in its own div
 	foreach ($pmcFriends as $pmcFriend) {
-		echo '<div style="border: 1px solid #666; background-color: #aaa; padding: 0; margin: 5px; width: 150px; height: 95px; display: inline-block; float: left;">' . "\n";
-		echo '<div style="display: block; margin: 5px 63px;">' . "\n";
-		echo '<img style="margin: 0 auto; padding: 0; width: 24px; height: 24px;" src="' . $pmcFriend->profile_image_url . '" alt="' . $pmcFriend->screen_name . '" title="' . $pmcFriend->name . '" />' . "\n";
+		echo '<div class="pmcTFContainAdmin">' . "\n";
+		echo '<div class="pmcTFBlockAdmin">' . "\n";
+		echo '<img class="pmcTFImgAdmin" src="' . $pmcFriend->profile_image_url . '" alt="' . $pmcFriend->screen_name . '" title="' . $pmcFriend->name . '" />' . "\n";
 		echo '</div>';
-		echo '<div style="display: block; text-align: center; margin: 0; padding: 5px 0 0 0 ; background-color: #666; color: #eee; width: 100%; height: 20px; border-top: 1px solid #666; overflow: hidden; border-bottom: 1px solid #666;">' . "\n";
+		echo '<div class="pmcTFNameAdmin">' . "\n";
 		echo $pmcFriend->name . "\n";
 		echo '</div>' . "\n";
-		echo '<div style="text-align: center; background-color: #aaa; padding: 5px 0;">' . "\n";
+		echo '<div class="pmcTFFormAdmin">' . "\n";
 		echo '<form action="" method="post">' . "\n";
 		echo '<input type="submit" value="Remove ' . ucfirst(rtrim($pmcDisplayType, 's')) . '" class="button-secondary" />' . "\n";
 		echo '<input type="hidden" name="delete-friend" value ="' . $pmcFriend->id . '" />' . "\n";
@@ -850,6 +875,7 @@ function pmcWriteStyles() {
 		echo 'height: 24px;' . "\n";
 		echo 'padding: 1px;' . "\n";
 		echo 'margin: 0;' . "\n";
+		echo 'overflow: hidden;' . "\n";
 		echo '}' . "\n";
 		echo "\n";
 		echo '.pmcTFImgNorm {' . "\n";
@@ -859,6 +885,7 @@ function pmcWriteStyles() {
 		echo 'height: 48px;' . "\n";
 		echo 'padding: 1px;' . "\n";
 		echo 'margin: 0;' . "\n";
+		echo 'overflow: hidden;' . "\n";
 		echo '}' . "\n";
 		echo "\n";
 		echo '.pmcTFImgBig {' . "\n";
@@ -868,6 +895,7 @@ function pmcWriteStyles() {
 		echo 'height: 96px;' . "\n";
 		echo 'padding: 1px;' . "\n";
 		echo 'margin: 0;' . "\n";
+		echo 'overflow: hidden;' . "\n";
 		echo '}' . "\n";
 		echo "\n";
 		echo '.pmcTFRSS, .pmcTFCounts {' . "\n";
@@ -884,6 +912,28 @@ function pmcWriteStyles() {
 		echo '}' . "\n";
 		echo '</style>' . "\n";
 		
+}
+
+//function to write styles to Admin Pages header
+function pmcWriteAdminStyles() {
+	echo '<!-- Styles for Twitter Friends -->';
+	echo '<style type="text/css">' . "\n";
+	echo '.pmcTFContainAdmin { border: 1px solid #666; background-color: #aaa; padding: 0; margin: 5px; width: 150px; height: 95px; display: inline-block; float: left; }' . "\n";
+	echo '.pmcTFBlockAdmin { display: block; margin: 5px 63px; }' . "\n";
+	echo '.pmcTFImgAdmin { margin: 0 auto; padding: 0; width: 24px; height: 24px; }' . "\n";
+	echo '.pmcTFNameAdmin { display: block; text-align: center; margin: 0; padding: 5px 0 0 0 ; background-color: #666; color: #eee; width: 100%; height: 20px; border-top: 1px solid #666; overflow: hidden; border-bottom: 1px solid #666; }' . "\n";
+	echo '.pmcTFFormAdmin { text-align: center; background-color: #aaa; padding: 5px 0; }' . "\n";
+	echo '* html .pmcTFContainAdmin { display: inline; }' . "\n";
+	echo '* + html .pmcTFContainAdmin { display: inline; }' . "\n";
+	echo '</style>' . "\n";
+}
+
+//function to add links on plugins page
+function pmc_TF_add_links($links) { 
+ // Add a link to this plugin's settings page
+ $settings_link = '<a href="admin.php?page=twitter-friends-widget">Settings</a>';
+ array_unshift($links, $settings_link); 
+ return $links; 
 }
 
 //------------------------------------------------------------------------------
@@ -924,6 +974,7 @@ function widget_TF_init() {
 		$pmcShowCounts = get_option('pmc_TF_show_counts');
 		$pmcFriendsCount = get_option('pmc_TF_friends');
 		$pmcFollowersCount = get_option('pmc_TF_followers');
+		$pmcShowFollow = get_option('pmc_TF_show_follow');
 		
 		//check if the user wants to display all users
 		if ($pmcLimit == 0) {
@@ -996,6 +1047,12 @@ function widget_TF_init() {
 			$pmcOut .= '<div class="pmcTFCounts">Friends: ' . $pmcFriendsCount . ' Followers: '	. $pmcFollowersCount . '</div>';
 		}
 		
+		//check if the user wants to display the follow button
+		if ($pmcShowFollow == 'yes') {
+			$pmcOut .= '<form action="http://twitter.com/friendships/create/' . $pmcUser . '.xml" method="post">';
+			$pmcOut .= '<input type="submit" value="Follow Me on Twitter" />';
+			$pmcOut .= '</form>';
+		}
 		//close widget display
 		$pmcOut .= $after_widget;
 		
@@ -1029,4 +1086,11 @@ add_action('widgets_init', 'widget_TF_init');
 add_shortcode('twitter-friends', 'pmcShortcode');
 //write styles to header
 add_action('wp_head', 'pmcWriteStyles');
+//write styles to admin header
+add_action('admin_head', 'pmcWriteAdminStyles');
+//action for WP 2.7 settings api
+add_action('admin_init', 'pmcTFOptions_init');
+//add links for settings etc to plugins page
+$plugin = plugin_basename(__FILE__); 
+add_filter("plugin_action_links_$plugin", 'pmc_TF_add_links' );
 ?>
