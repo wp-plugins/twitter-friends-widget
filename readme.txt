@@ -68,15 +68,18 @@ Feedback and requests for new features are welcome. Just leave a comment on the 
 
 == Changelog ==
 
-= Version 3.02 =
+= 3.10 =
+* Fixed bug that prevented Followeres from being shown 
+
+= 3.02 =
 * Added WordPress Mu compatibility. (Fixed issue with WPMU users not being able to save settings).
 * Minor update to CSS used to display images. 
 * Added Settings link to Plugins page. (Appears beside Deactivate and Edit links)
 
-= Version 3.01 =
+= 3.01 =
 * Updated CSS for better compatibility with IE.
 
-= Version 3.0 =
+= 3.0 =
 * Complete rewrite of plugin.
 * Images displayed using DIV's instead of TABLE.
 * Moved Widget Settings to Main Menu.
@@ -91,13 +94,13 @@ Feedback and requests for new features are welcome. Just leave a comment on the 
 * Added option to display Friends and Followers Counts.
 
 
-= Version 2.7 =
+= 2.7 =
 * Added shortcode.
 * Added rel="nofollow" to Twitter Profile/ RSS links.
 * Cleaned up some database code.
 * Bug Fix: Updated code for genarating output table to remove an XHTML validation error.
 
-= Version 2.6 =
+= 2.6 =
 * Added option to specify whether Friends or Followers are displayed.
 * Updated code to use curl instead of pmc_http_class to connect to Twitter.
 * Added "Delete All" option in Advanced Settings.
@@ -105,10 +108,10 @@ Feedback and requests for new features are welcome. Just leave a comment on the 
 * Bug Fix: Display limit not being displayed correctly in Widget Control Panel.
 * Bug Fix: Twitter ID not updated correctly.
 
-= Version 2.5.1 =
+= 2.5.1 =
 * Incorporated patch from David Jack Wange Olrik to rename class_http.php and generic http() class to avoid naming conflicts.
 
-= Version 2.5 =
+= 2.5 =
 * Added "Twitter Friends Widget - Advanced Settings" plugin.
 * Added Delete Friends option.
 * Added Manual Update option.
@@ -117,46 +120,46 @@ Feedback and requests for new features are welcome. Just leave a comment on the 
 * Updated widget code to alter how the Twitter ID is retrieved from Twitter Username.
 * Fixed minor issue with profile images being incorrectly displayed in sidebar.
 
-= Version 2.4 =
+= 2.4 =
 * Added option to change table style.
 
-= Version 2.3 =
+= 2.3 =
 * Added option to enable/ disable "Subscribe to My Twitter Feed" link.
 * Added option to add link to Widget Title
 
-= Version 2.2 =
+= 2.2 =
 * Fixed a bug where ther limit specified in the widget settings was not being applied.
 
-= Version 2.1 =
+= 2.1 =
 * Removed wp-cron based caching as this was unreliable.
 * Added my own simple scheduler for updating the cache.
 
-= Version 2.0 =
+= 2.0 =
 * Complete re-write of the plugin
 * Added caching via a new table added to the WordPress database
 * Added cache updating via wp-cron
 * Added option that permanantly stores Twitter ID, Twitter API only needs to be called once to get the ID
 * Added RSS icon to subscribe link
 
-= Version 1.21 =
+= 1.21 =
 * Fixed bug with background and text colour styles not being applied correctly
 
-= Version 1.2 =
+= 1.2 =
 * Due to a large number of issues with the caching function, caching has been removed. See FAQ for more details.
 * Added link to users Twitter RSS
 * Added option to change background and text colours.
 
-= Version 1.13 =
+= 1.13 =
 * Added blank http_friends.xml to cache so that cache folder will be included with plugin .zip.
 * Updated installation instructions to reflect that cache must be writable.
 * Updated readme with error message regarding unwritable cache folder.
 
-= Version 1.12 =
+= 1.12 =
 Fixed issue with profile images not being displayed correctly.
 
-= Version 1.11 =
+= 1.11 =
 Fixed bug with local caching
 
-= Version 1.1 =
+= 1.1 =
 * Changed from using "normal" size images to "mini" size profile images
 * Added styles to header

@@ -3,7 +3,7 @@
 Plugin Name: Twitter Friends Widget
 Plugin URI: http://www.paulmc.org/whatithink/wordpress/plugins/twitter-friends-widget/
 Description: Widget to display your Twitter Friends in the sidebar.
-Version: 3.02
+Version: 3.1
 Author: Paul McCarthy
 Author URI: http://www.paulmc.org/whatithink
 */
@@ -262,7 +262,7 @@ function pmcTFChangeUser() {
 			//update the username
 			update_option('pmc_TF_user', $pmcUser);
 			//update the password
-			update_option('pmc_TF_password', $pmcUser);
+			update_option('pmc_TF_password', $pmcPass);
 			//delete current friends from the database
 			$pmcSQL = "DELETE FROM $pmcTable WHERE `id` LIKE '%'";
 			//run the query
@@ -528,6 +528,7 @@ function pmcGetFollowers() {
 	for ($i=1; $i<=$pmcNumPages; $i++) {
 		//set the url to retrieve friends from Twitter dependent on the type to retrieve
 			$pmcURL = 'http://twitter.com/statuses/followers.xml?page=' . $i;
+			
 		
 		//set the curl url
 		curl_setopt($pmcCurl, CURLOPT_URL, $pmcURL);
